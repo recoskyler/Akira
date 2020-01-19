@@ -1,6 +1,7 @@
 function openTab(filename) {
     var myID = chrome.i18n.getMessage("@@extension_id");
-    chrome.windows.getCurrent( function(win) { 
+
+    chrome.windows.getCurrent(function(win) { 
         chrome.tabs.query(
             {'windowId': win.id}, 
             function(tabArray) {
@@ -12,10 +13,13 @@ function openTab(filename) {
                         return; 
                     }
                 }
-                chrome.tabs.create({url:chrome.extension.getURL(filename)});
+
+                chrome.tabs.create({url:chrome.runtime.getURL(filename), selected: true});
             }
         );
     });
 }
 
-openTab("index.html")
+chrome.browserAction.onClicked.addListener(function(tab) {
+    openTab("popup.html");
+});
