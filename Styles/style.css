@@ -1,0 +1,146 @@
+html {
+    margin: 0;
+    padding: 0;
+    font-family: 'Montserrat', sans-serif;
+    min-width: 800px;
+    color: #EFEFEF;
+}
+
+body {
+    display: block;
+    margin: 0 auto 0 auto;
+    padding: 0;
+    width: 100%;
+    background-color: #212121;
+}
+
+nav {
+    display: block;
+    position: static;
+    background-color: #212121;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid #555555;
+    user-select: none;
+}
+
+.navItem {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.navButton {
+    display: inline-block;
+    margin: 0;
+    padding: 10px;
+    background-color: #212121;
+    border: none;
+    font-family: 'Montserrat', sans-serif;
+    font-size: medium;
+    color: #EFEFEF;
+    transition: border-bottom 0.1s;
+    transition-timing-function: ease-in-out;
+    outline: none;
+    cursor: pointer;
+}
+
+.navButton:hover {
+    border-bottom: 2px solid #EFEFEF;
+}
+
+.leftMost {
+    float: left;
+}
+
+.rightMost {
+    float: right;
+}
+
+#nameIcon {
+    display: block;
+    position: relative;
+    color: #EFEFEF;
+    font-size: large;
+    padding: 6px;
+    padding-left: 10px;
+    z-index: 8;
+    border: none;
+    margin: 0;
+    cursor: default;
+    letter-spacing: 5px;
+    font-size: large;
+}
+
+table {
+    border: none;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border-image-width: 0;
+    border-spacing: 0;
+}
+
+td {
+    border-style: none;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    border-image-width: 0;
+    border-spacing: 0;
+}
+
+tr {
+    border-image-width: 0;
+    border: none;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    border-spacing: 0;
+}
+
+.side {
+    width: 20%;
+    min-width: 0;
+    text-align: left;
+}
+
+.center {
+    width: 60%;
+    min-width: 700px;
+}
+
+.selectedNav {
+    border-bottom: 2px solid #EFEFEF;
+}
+
+tbody {
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-image-width: 0;
+    border-spacing: 0;
+}
+
+#main {
+    display: block;
+    position: relative;
+    width: 60%;
+    min-width: 800px;
+    margin: 15px auto 0 auto;
+    padding: 0;
+}
+
+#logo {
+    display: block;
+    position: relative;
+    width: 128px;
+    margin: 50px auto 100px auto;
+}
+
+p {
+    font-size: 14px;
+    text-align: center;
+}
