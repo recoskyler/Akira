@@ -1,35 +1,43 @@
-function openTab(filename) {
-    var myID = chrome.i18n.getMessage("@@extension_id");
+function getBookmarkFolderID() {
+    var bid;
 
-    chrome.windows.getCurrent(function(win) { 
-        chrome.tabs.query(
-            {'windowId': win.id}, 
-            function(tabArray) {
-                for(var i in tabArray) {
-                    if(tabArray[i].url == "chrome-extension://" + myID + "/" + filename) { 
-                        console.warn("Already opened");
-                        chrome.tabs.update(tabArray[i].id, {active: true});
+    try {
+        chrome.storage.sync.get(['key'], function(result) {
+            if (result.key == undefined) {
+                chrome.bookmarks.create({title: "Akira Bookmarks"}, function(node) {
+                    chrome.storage.sync.set({key: node.id}, function() {});
 
-                        return; 
-                    }
-                }
-
-                chrome.tabs.create({url:chrome.runtime.getURL(filename), selected: true});
+                    bid = node.id;
+                });
             }
-        );
-    });
+
+            bid = result.key;
+        });
+    } catch (error) {
+        console.error("ERROR : Failed to check if bookmark folder id is stored");
+    }
+
+    // Check if Akira Bookmarks folder exists
+
+    try {
+        chrome.bookmarks.search({title: "Akira Bookmarks"}, function(res) {
+            if (res.length === 0) {
+                if (res.id == null) {
+                    chrome.bookmarks.create({title: "Akira Bookmarks"}, function(node) {
+                        chrome.storage.sync.set({key: node.id}, function() {});
+    
+                        bid = node.id;
+                    });
+                }
+            }
+        });
+    } catch (error) {
+        console.error("ERROR : Failed to check if bookmark folder exists");
+    }
+
+    return bid;
 }
 
-/*
 chrome.runtime.onInstalled.addListener(function() {
-    chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
-        chrome.declarativeContent.onPageChanged.addRules([{
-            conditions: [new chrome.declarativeContent.PageStateMatcher({
-                pageUrl: {hostEquals: 'developer.chrome.com'},
-            })
-            ],
-                actions: [new chrome.declarativeContent.ShowPageAction()]
-        }]);
-    });
+    getBookmarkFolderID();    
 });
-*/

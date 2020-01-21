@@ -12,7 +12,14 @@
         "256": "images/icon256.png",
         "512": "images/icon512.png"
     },
-    "permissions": ["background", "tabs", "activeTab", "declarativeContent", "storage"],
+    "permissions": [
+        "background", 
+        "tabs", 
+        "activeTab", 
+        "declarativeContent", 
+        "storage", 
+        "bookmarks"
+    ],
     "background": {
         "scripts": ["background.js"],
         "persistent": false

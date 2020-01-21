@@ -8,6 +8,8 @@ function aboutScreen() {
         <p>Made by Recoskyler (Adil Atalay Hamamcıoğlu)</p>
         <br/>
         <p>Version: ${manifestData.version}</p>
+        <br/>
+        <p><a href='https://github.com/recoskyler/Akira' target='_blank'><img id='git' src='../images/github.png' alt='GITHUB'></a></p>
     `;
 
     resetNavClassNames();
@@ -15,18 +17,16 @@ function aboutScreen() {
 }
 
 function openTabsScreen() {
-    document.getElementById('main').innerHTML = `
-        a
-    `;
+    
 
     resetNavClassNames();
     document.getElementById("openTabsScreen").className += " selectedNav";
 }
 
 function bookmarksScreen() {
-    document.getElementById('main').innerHTML = `
-        b
-    `;
+    chrome.tabs.getCurrent(function(tab) {
+        chrome.tabs.update(tab.id, {url: "chrome://bookmarks/"}, function() {})
+    });
 
     resetNavClassNames();
     document.getElementById("bookmarksScreen").className += " selectedNav";
