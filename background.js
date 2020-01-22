@@ -1,10 +1,12 @@
+var bookmarksFolderName = "Akira Bookmarks";
+
 function getBookmarkFolderID() {
     var bid;
 
     try {
         chrome.storage.sync.get(['key'], function(result) {
             if (result.key == undefined) {
-                chrome.bookmarks.create({title: "Akira Bookmarks"}, function(node) {
+                chrome.bookmarks.create({title: bookmarksFolderName}, function(node) {
                     chrome.storage.sync.set({key: node.id}, function() {});
 
                     bid = node.id;
@@ -20,10 +22,10 @@ function getBookmarkFolderID() {
     // Check if Akira Bookmarks folder exists
 
     try {
-        chrome.bookmarks.search({title: "Akira Bookmarks"}, function(res) {
+        chrome.bookmarks.search({title: bookmarksFolderName}, function(res) {
             if (res.length === 0) {
                 if (res.id == null) {
-                    chrome.bookmarks.create({title: "Akira Bookmarks"}, function(node) {
+                    chrome.bookmarks.create({title: bookmarksFolderName}, function(node) {
                         chrome.storage.sync.set({key: node.id}, function() {});
     
                         bid = node.id;

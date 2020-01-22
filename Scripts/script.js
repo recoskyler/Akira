@@ -1,6 +1,7 @@
 var manifestData = chrome.runtime.getManifest();
-var ctrlDown = false;
+var bookmarksFolderName = "Akira Bookmarks";
 var shiftDown = false;
+var ctrlDown = false;
 var lastsliid = -1;
 
 // NAV SCREENS
@@ -49,7 +50,7 @@ function openTabsScreen() {
                         return;
                     }
 
-                    chrome.bookmarks.search({title: "Akira Bookmarks"}, (ab) => {
+                    chrome.bookmarks.search({title: bookmarksFolderName}, (ab) => {
                         res.forEach((b) => {
                             if (b.parentId === ab[0].id) {
                                 bookmark = "../images/bookmarked.png";
@@ -160,11 +161,11 @@ function openTabsScreen() {
 
 function bookmarksScreen() {
     chrome.tabs.getCurrent(function(tab) {
-        chrome.bookmarks.search({title: "Akira Bookmarks"}, (res) => {
+        chrome.bookmarks.search({title: bookmarksFolderName}, (res) => {
             if (res.length > 0) {
                 chrome.tabs.update(tab.id, {url: ("chrome://bookmarks/?id=" + res[0].id)}, function() {});
             } else {
-                chrome.bookmarks.create({title: "Akira Bookmarks"}, (node) => {
+                chrome.bookmarks.create({title: bookmarksFolderName}, (node) => {
                     chrome.tabs.update(tab.id, {url: ("chrome://bookmarks/?id=" + node.id)}, function() {});
                 })
             }
@@ -197,11 +198,11 @@ function closeTab(tabID) {
 
 function bookmarkTab(tabID) {
     chrome.tabs.get(tabID, (t) => {
-        chrome.bookmarks.search({title: "Akira Bookmarks"}, (res) => {
+        chrome.bookmarks.search({title: bookmarksFolderName}, (res) => {
             if (res.length > 0) {
                 bookmarkTabF(t, res[0].id);
             } else {
-                chrome.bookmarks.create({title: "Akira Bookmarks"}, (node) => {
+                chrome.bookmarks.create({title: bookmarksFolderName}, (node) => {
                     bookmarkTabF(t, node.id);
                 })
             }

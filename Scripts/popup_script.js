@@ -1,3 +1,5 @@
+var bookmarksFolderName = "Akira Bookmarks";
+
 function openTab(filename) {
     var myID = chrome.i18n.getMessage("@@extension_id");
 
@@ -21,11 +23,11 @@ function openTab(filename) {
 }
 
 function bookmarksScreen() {
-    chrome.bookmarks.search({title: "Akira Bookmarks"}, (res) => {
+    chrome.bookmarks.search({title: bookmarksFolderName}, (res) => {
         if (res.length > 0) {
             chrome.tabs.create({url: ("chrome://bookmarks/?id=" + res[0].id)}, function() {});
         } else {
-            chrome.bookmarks.create({title: "Akira Bookmarks"}, (node) => {
+            chrome.bookmarks.create({title: bookmarksFolderName}, (node) => {
                 chrome.tabs.create({url: ("chrome://bookmarks/?id=" + node.id)}, function() {});
             })
         }
