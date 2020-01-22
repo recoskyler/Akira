@@ -256,3 +256,9 @@ br {
 .selected:hover {
     background-color: #303F9F;
 }
+
+iframe {
+    display: block;
+    height: 100%;
+    width: 100%;
+}

@@ -5,25 +5,23 @@
     "manifest_version": 2,
     "options_page": "options.html",
     "icons": {
-        "16": "images/icon16.png",
-        "32": "images/icon32.png",
-        "48": "images/icon48.png",
-        "128": "images/icon128.png",
-        "256": "images/icon256.png",
-        "512": "images/icon512.png"
+        "16": "images/icon_16.png",
+        "32": "images/icon_32.png",
+        "48": "images/icon_48.png",
+        "128": "images/icon_128.png",
+        "256": "images/icon_256.png",
+        "512": "images/icon_512.png"
     },
     "permissions": [
-        "background", 
-        "tabs", 
-        "activeTab", 
-        "declarativeContent", 
-        "storage", 
+        "background",
+        "tabs",
+        "activeTab",
+        "storage",
         "bookmarks"
     ],
     "background": {
         "scripts": [
             "background.js",
-            "./scripts/jquery.js",
             "./scripts/script.js",
             "./scripts/popup_script.js"
         ],
@@ -32,17 +30,19 @@
     "content_scripts": 
     [
         {
-            "js":["./scripts/jquery.js", "./scripts/script.js", "./scripts/popup_script.js"],
+            "js":["./scripts/script.js", "./scripts/popup_script.js"],
             "matches": [ "http://*/*", "https://*/*"]
         }
     ],
     "browser_action": {
         "default_popup": "popup.html",
         "default_icon": {
-            "16": "images/icon16.png",
-            "32": "images/icon32.png",
-            "48": "images/icon48.png",
-            "128": "images/icon128.png"
+            "16": "images/icon_16.png",
+            "32": "images/icon_32.png",
+            "48": "images/icon_48.png",
+            "128": "images/icon_128.png",
+            "256": "images/icon_256.png",
+            "512": "images/icon_512.png"
         }
     }
 }

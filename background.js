@@ -41,5 +41,13 @@ function getBookmarkFolderID() {
 }
 
 chrome.runtime.onInstalled.addListener(function() {
-    getBookmarkFolderID();    
+    chrome.tabs.getCurrent(function(tab) {
+        chrome.bookmarks.search({title: bookmarksFolderName}, (res) => {
+            if (res.length > 0) {
+                //chrome.tabs.update(tab.id, {url: ("chrome://bookmarks/?id=" + res[0].id)}, function() {});
+            } else {
+                chrome.bookmarks.create({title: bookmarksFolderName}, (node) => {})
+            }
+        });
+    });   
 });
