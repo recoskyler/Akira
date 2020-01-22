@@ -1,14 +1,20 @@
 var manifestData = chrome.runtime.getManifest();
 var bookmarksFolderName = "Akira Bookmarks";
-var shiftDown = false;
-var ctrlDown = false;
+var shiftDown = false, ctrlDown = false, mouseHold = false, mousePress = false;
 var lastsliid = -1;
+var div, x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+var threshold = 185;
+var timer = setTimeout(() => {}, 1);
 
 // NAV SCREENS
 
 function aboutScreen() {
     document.getElementById('main').innerHTML = `
-        <img src="./images/icon512.png" id="logo" alt="AKIRA"/>
+        <img src="./images/icon_512.png" id="logo" alt="AKIRA"/>
+
+        <h1>AKIRA</h1>
+
+        <br/>
         
         <p>Akira is a Chrome extension for sorting -> viewing -> bookmarking/closing
          a bunch of tabs that are open on multiple windows.</p>
@@ -21,7 +27,7 @@ function aboutScreen() {
         
         <br/>
         
-        <p><a href='https://github.com/recoskyler/Akira' target='_blank'><img id='git' src='../images/github.png' alt='GITHUB'></a></p>
+        <p><img id='git' src='../images/github.png' alt='GITHUB'></p>
     `;
 
     resetNavClassNames();
@@ -36,8 +42,6 @@ function openTabsScreen() {
     var liid = 0;
     
     list.id = "allTabsList";
-
-    document.getElementById("main").innerHTML = "";
 
     chrome.windows.getAll({populate:true}, function(windows) {
         windows.forEach(function(window) {
@@ -64,7 +68,7 @@ function openTabsScreen() {
                         listItem.id = "l" + tab.id;
 
                         listItem.innerHTML = `
-                        <table class="tabItemTable">
+                            <table class="tabItemTable">
                                 <tr>
                                     <td><span class="tabTitle">${tab.title}</span></td>
                                     <td rowspan='2' class="miniActions">
@@ -83,50 +87,6 @@ function openTabsScreen() {
 
                         document.getElementById("main").innerHTML = "";
                         document.getElementById("main").appendChild(list);
-
-                        // SELECTION
-
-                        document.getElementById("l" + tab.id).addEventListener("click", () => {
-                            var li = document.getElementById("l" + tab.id);
-
-                            if (!ctrlDown) {
-                                var se = document.getElementsByClassName("tabItem");
-
-                                for (i = 0; i < se.length; i++) {
-                                    if (se[i].id !== li.id || (!shiftDown && document.getElementsByClassName("selected").length > 1)) {
-                                        se[i].classList.remove("selected");
-                                    }
-                                }
-                            }
-
-                            if (lastsliid != -1 && shiftDown && ctrlDown) {
-                                if (lastsliid > li.classList[1]) {
-                                    for (k = lastsliid; k > li.classList[1]; k--) {
-                                        var sei = document.getElementsByClassName(k);
-                                        
-                                        if (k == lastsliid) {
-                                            continue;
-                                        }
-
-                                        sei[0].classList.toggle("selected");
-                                    }
-                                } else if (lastsliid < li.classList[1]) {
-                                    for (k = lastsliid; k < li.classList[1]; k++) {
-                                        var sei = document.getElementsByClassName(k);
-
-                                        if (k == lastsliid) {
-                                            continue;
-                                        }
-
-                                        sei[0].classList.toggle("selected");
-                                    }
-                                }
-                            }
-                            
-                            li.classList.toggle('selected');
-
-                            lastsliid = li.classList[1];
-                        });
 
                         // MINI ACTIONS
 
@@ -155,6 +115,10 @@ function openTabsScreen() {
         });
     });
 
+    checkEmptyMain(`
+        <h2 id="emptyPage">NO OPEN TABS</h2>
+    `);
+
     resetNavClassNames();
     document.getElementById("openTabsScreen").className += " selectedNav";
 }
@@ -174,9 +138,9 @@ function bookmarksScreen() {
 }
 
 function recentlyClosedScreen() {
-    document.getElementById('main').innerHTML = `
-        RECENTLY CLOSED
-    `;
+    checkEmptyMain(`
+        <h2 id="emptyPage">NO RECENTLY CLOSED TABS</h2>
+    `);
 
     resetNavClassNames();
     document.getElementById("recentlyClosedScreen").className += " selectedNav";
@@ -226,7 +190,55 @@ function bookmarkTabF(tab, pid) {
     });
 }
 
+// TAB ACTIONS
+
+function deselectAllTabItems() {
+    var se = document.getElementsByClassName("tabItem");
+
+    for (i = 0; i < se.length; i++) {
+        if (se[i].classList.contains("selected")) {
+            se[i].classList.remove("selected");
+        }
+    }
+}
+
+function selectAllTabItems() {
+    var se = document.getElementsByClassName("tabItem");
+
+    for (i = 0; i < se.length; i++) {
+        if (!se[i].classList.contains("selected")) {
+            se[i].classList.add("selected");
+        }
+    }
+}
+
+function closeSelectedTabs() { // TODO Close selected
+    var se = document.getElementsByClassName("tabItem");
+
+    for (i = 0; i < se.length; i++) {
+        if (!se[i].classList.contains("selected")) {
+            se[i].classList.add("selected");
+        }
+    }
+}
+
+function bookmarkSelectedTabs() { // TODO Bookmark selected
+    var se = document.getElementsByClassName("tabItem");
+
+    for (i = 0; i < se.length; i++) {
+        if (!se[i].classList.contains("selected")) {
+            se[i].classList.add("selected");
+        }
+    }
+}
+
 // OTHER
+
+function checkEmptyMain(blankPage) {
+    if (document.getElementById("main").childElementCount === 0) {
+        document.getElementById("main").innerHTML = blankPage;
+    }
+}
 
 function resetNavClassNames() {
     document.getElementById("aboutScreen").className = "navButton rightMost";
@@ -253,43 +265,220 @@ function dropEvents(c) {
     });
 }
 
-/////
+function openGit() {
+    chrome.tabs.create({url: "https://github.com/recoskyler/Akira", active: true});
+}
 
-window.onload = function() {
-    var els = ["openTabsScreen", "bookmarksScreen", "recentlyClosedScreen", "aboutScreen"];
-    var fus = [this.openTabsScreen, this.bookmarksScreen, this.recentlyClosedScreen, this.aboutScreen];
+// SELECTION AND MOUSE CLICK/DRAG/ETC...
+
+function reCalc() { //This will restyle the div
+    var x3 = Math.min(x1,x2); //Smaller X
+    var x4 = Math.max(x1,x2); //Larger X
+    var y3 = Math.min(y1,y2); //Smaller Y
+    var y4 = Math.max(y1,y2); //Larger Y
+    div.style.left = x3 + 'px';
+    div.style.top = y3 + 'px';
+    div.style.width = x4 - x3 + 'px';
+    div.style.height = y4 - y3 + 'px';
+}
+
+function checkIntersections() {
+    // NAV CLICK
+
+    var els = ["openTabsScreen", "recentlyClosedScreen", "bookmarksScreen", "aboutScreen"];
+    var fus = [this.openTabsScreen, this.recentlyClosedScreen, this.bookmarksScreen, this.aboutScreen];
 
     for (var i = 0; i < els.length; i++) {
         var el = document.getElementById(els[i]);
+        var rect1 = el.getBoundingClientRect();
+        var rect2 = div.getBoundingClientRect();
+        var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 
-        if (el){
-            el.addEventListener('click', fus[i]);
+        if (overlap && !mouseHold && mousePress && !ctrlDown && !shiftDown){
+            document.getElementById("main").innerHTML = "";
+            fus[i]();
         }
     }
 
+    // MINI ACTIONS
+
+    var miniActions = document.getElementsByClassName("miniAction");
+
+    for (i = 0; i < miniActions.length; i++) {
+        var item = miniActions[i];
+        var rect1 = item.getBoundingClientRect();
+        var rect2 = div.getBoundingClientRect();
+        var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
+
+        if (overlap && mouseHold && !shiftDown) {
+            switch (item.id.charAt(0)) {
+                case 'b':
+                    bookmarkTab(parseInt(item.id.substring(1)));
+                    break;
+                case 'v':
+                    viewTab(parseInt(item.id.substring(1)));
+                    break;
+                case 'c':
+                    closeTab(parseInt(item.id.substring(1)));
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    // OTHER BUTTONS
+
+    var otherButtonIDs = ["git"];
+    var otherButtonFNs = [openGit];
+
+    for (i = 0; i < otherButtonIDs.length; i++) {
+        var item = document.getElementById(otherButtonIDs[i]);
+        var rect1 = item.getBoundingClientRect();
+        var rect2 = div.getBoundingClientRect();
+        var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
+
+        if (overlap && !mouseHold && !shiftDown && !ctrlDown) {
+            otherButtonFNs[i]();
+        }
+    }
+
+    // TABS SELECT/CLICK
+
+    if ((mousePress && !mouseHold && !ctrlDown) || (mouseHold && !ctrlDown)) {
+        deselectAllTabItems();
+    }
+
+    var tabItems = document.getElementsByClassName("tabItem");
+
+    for (i = 0; i < tabItems.length; i++) {
+        var item = tabItems[i];
+        var rect1 = item.getBoundingClientRect();
+        var rect2 = div.getBoundingClientRect();
+        var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
+
+        if (overlap && mouseHold && !shiftDown) {
+            if (!item.classList.contains("selected")) {
+                item.classList.add("selected");
+            }
+        } else if (overlap && mousePress && !mouseHold) {
+            item.classList.toggle("selected");
+
+            if (lastsliid != -1 && shiftDown && ctrlDown) {
+                if (lastsliid > item.classList[1]) {
+                    for (k = lastsliid; k > item.classList[1]; k--) {
+                        var sei = document.getElementsByClassName(k);
+                        
+                        if (k == lastsliid) {
+                            continue;
+                        }
+    
+                        sei[0].classList.toggle("selected");
+                    }
+                } else if (lastsliid < item.classList[1]) {
+                    for (k = lastsliid; k < item.classList[1]; k++) {
+                        var sei = document.getElementsByClassName(k);
+    
+                        if (k == lastsliid) {
+                            continue;
+                        }
+    
+                        sei[0].classList.toggle("selected");
+                    }
+                }
+            }
+            
+            lastsliid = item.classList[1];
+        }
+    }
+}
+
+/////
+
+window.onload = function() {
+    div = document.getElementById('selectionRect');
+
+    // CTRL, A, B, C DOWN
     this.document.addEventListener("keydown", (event) => {
         if (event.key === "Control") {
             this.ctrlDown = true;
         }
+
+        if (event.key === "a" && this.ctrlDown && !this.shiftDown) {
+            this.selectAllTabItems();
+        } else if (event.key === "a" && this.ctrlDown && this.shiftDown) {
+
+        } else if (event.key === "b" && this.ctrlDown && !this.shiftDown) {
+            this.bookmarkSelectedTabs();
+        } else if (event.key === "c" && this.ctrlDown && !this.shiftDown) {
+            this.closeSelectedTabs();
+        }
     });
 
+    // CTRL UP
     this.document.addEventListener("keyup", (event) => {
         if (event.key === "Control") {
             this.ctrlDown = false;
         }
     });
 
+    // SHIFT DOWN
     this.document.addEventListener("keydown", (event) => {
         if (event.key === "Shift") {
             this.shiftDown = true;
         }
     });
 
+    // SHIFT UP
     this.document.addEventListener("keyup", (event) => {
         if (event.key === "Shift") {
             this.shiftDown = false;
         }
     });
+
+    // MOUSE DOWN
+    this.document.addEventListener("mousedown", (event) => {
+        this.timer = this.setTimeout(() => {
+            this.mouseHold = true;
+        }, this.threshold);
+
+        this.mousePress = true;
+        this.div.hidden = 0; //Unhide the div
+        this.x1 = event.clientX; //Set the initial X
+        this.y1 = event.clientY; //Set the initial Y
+        this.reCalc();
+        this.checkIntersections();
+    });
+
+    // MOUSE MOVE
+    this.document.addEventListener("mousemove", (event) => {
+        this.x2 = event.clientX; //Update the current position X
+        this.y2 = event.clientY; //Update the current position Y
+
+        if (this.mousePress) {
+            this.reCalc();
+        }
+
+        if (this.mouseHold) {
+            this.checkIntersections();
+        }
+    });
+
+    // MOUSE UP
+    this.document.addEventListener("mouseup", (event) => {
+        clearTimeout(timer);
+
+        if (event.button === 0) {
+            this.mouseHold = false;
+            this.mousePress = false;
+            this.x1 = 0; //Set the initial X
+            this.y1 = 0; //Set the initial Y
+            this.div.hidden = 1; //Hide the div
+            this.reCalc();
+        }
+    });
+
+    // TODO Optimize this part VVVVVV
 
     chrome.tabs.onUpdated.addListener(openTabsScreen);
     chrome.tabs.onCreated.addListener(reloadAkira);
@@ -299,6 +488,8 @@ window.onload = function() {
     chrome.tabs.onDetached.addListener(reloadAkira);
     chrome.tabs.onAttached.addListener(reloadAkira);
     chrome.windows.onCreated.addListener(reloadAkira);
+
+    /////
 
     openTabsScreen();
 }
