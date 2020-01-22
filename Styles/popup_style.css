@@ -3,21 +3,19 @@ html {
     padding: 0;
     font-family: 'Montserrat', sans-serif;
     color: #EFEFEF;
-    width: 400px;
-    height: 500px;
 }
 
 body {
     margin: 0;
     padding: 0;
     background-color: #212121;
-    width: 400px;
-    height: 500px;
+    width: 300px;
+    height: 180px;
 }
 
 #title {
     display: block;
-    position: fixed;
+    position: relative;
     width: 100%;
     margin: 0;
     padding: 10px;
@@ -31,23 +29,32 @@ body {
     user-select: none;
 }
 
-#manage {
+button {
     display: block;
     position: relative;
+    width: 90%;
     outline: none;
     box-shadow: none;
-    border: 2px solid teal;
     border-radius: 50px;
-    background-color: teal;
     font-family: 'Montserrat', sans-serif;
     font-size: medium;
     color: #EFEFEF;
     padding: 5px 20px;
-    margin: 0 auto;
-    transition: border-color 0.2s, background-color 0.2s;
+    margin: 20px auto;
+    transition: border-color 0.1s, background-color 0.2s;
     transition-timing-function: ease-in-out;
     cursor: pointer;
     user-select: none;
+}
+
+#manage {
+    background-color: #009688;
+    border: 2px solid #009688;
+}
+
+#bookmarks {
+    background-color: #3F51B5;
+    border: 2px solid #3F51B5;
 }
 
 #manage:hover {
@@ -55,12 +62,7 @@ body {
     background-color: #004D40;
 }
 
-#footer {
-    display: block;
-    position: fixed;
-    width: 100%;
-    align-items: center;
-    bottom:0;
-    padding: 10px 0;
-    border-top: 1px solid #555555;
+#bookmarks:hover {
+    border-color: #1A237E;
+    background-color: #1A237E;
 }

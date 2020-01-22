@@ -20,6 +20,18 @@ function openTab(filename) {
     });
 }
 
+function bookmarksScreen() {
+    chrome.bookmarks.search({title: "Akira Bookmarks"}, (res) => {
+        if (res.length > 0) {
+            chrome.tabs.create({url: ("chrome://bookmarks/?id=" + res[0].id)}, function() {});
+        } else {
+            chrome.bookmarks.create({title: "Akira Bookmarks"}, (node) => {
+                chrome.tabs.create({url: ("chrome://bookmarks/?id=" + node.id)}, function() {});
+            })
+        }
+    });
+}
+
 window.onload = function() {
     var el = document.getElementById("manage");
 
@@ -27,5 +39,11 @@ window.onload = function() {
         el.addEventListener('click', function() {
             openTab("options.html");
         });
+    }
+
+    var el = document.getElementById("bookmarks");
+
+    if (el){
+        el.addEventListener('click', this.bookmarksScreen);
     }
 }

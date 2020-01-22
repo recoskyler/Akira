@@ -27,6 +27,8 @@ function getBookmarkFolderID() {
                         chrome.storage.sync.set({key: node.id}, function() {});
     
                         bid = node.id;
+                        console.log(bid);
+                        return bid;
                     });
                 }
             }
@@ -34,8 +36,6 @@ function getBookmarkFolderID() {
     } catch (error) {
         console.error("ERROR : Failed to check if bookmark folder exists");
     }
-
-    return bid;
 }
 
 chrome.runtime.onInstalled.addListener(function() {
