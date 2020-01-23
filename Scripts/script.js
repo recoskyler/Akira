@@ -5,6 +5,9 @@ var lastsliid = -1;
 var div, x1 = 0, y1 = 0, x2 = 0, y2 = 0;
 var threshold = 185;
 var timer = setTimeout(() => {}, 1);
+var selectedTabs = [];
+var allTabs = [];
+var windowColors = ["#3F51B5", "#F44336", "#4CAF12", "#03A9F4", "#FFC107"];
 
 // NAV SCREENS
 
@@ -34,93 +37,37 @@ function aboutScreen() {
     document.getElementById("aboutScreen").className += " selectedNav";
 }
 
-function openTabsScreen() {
-    dropEvents("miniAction");
-    dropEvents("tabItem");
+function openTabsScreen(tid = -1, change = {status: "none"}) {
+    chrome.tabs.getCurrent((ctab) => {
+        if (tid === ctab.id) {
+            return;
+        }
 
-    var list = document.createElement("ul");
-    var liid = 0;
-    
-    list.id = "allTabsList";
+        var list = document.createElement("ul");
+        list.id = "allTabsList";
 
-    chrome.windows.getAll({populate:true}, function(windows) {
-        windows.forEach(function(window) {
-            window.tabs.forEach(function(tab) {
-                var listItem = document.createElement("li");
-                var bookmark = "../images/bookmark.png";
+        const myNode = document.getElementById("main");
+        while (myNode.firstChild) {
+            myNode.removeChild(myNode.firstChild);
+        }
 
-                chrome.bookmarks.search({ url: tab.url}, (res) => {
-                    if (tab.url.includes("chrome-extension://") || tab.url.includes("chrome://")) {
-                        return;
-                    }
+        document.getElementById("main").appendChild(list);
 
-                    chrome.bookmarks.search({title: bookmarksFolderName}, (ab) => {
-                        res.forEach((b) => {
-                            if (b.parentId === ab[0].id) {
-                                bookmark = "../images/bookmarked.png";
-                            }
-                        });
-
-                        var btnIDs = [];
-
-                        listItem.classList.add("tabItem");
-                        listItem.classList.add(liid);
-                        listItem.id = "l" + tab.id;
-
-                        listItem.innerHTML = `
-                            <table class="tabItemTable">
-                                <tr>
-                                    <td><span class="tabTitle">${tab.title}</span></td>
-                                    <td rowspan='2' class="miniActions">
-                                        <img id="c${tab.id}" class="miniAction" src="../images/close.png" alt="CLOSE TAB">
-                                        <img id="v${tab.id}" class="miniAction" src="../images/view.png" alt="VIEW TAB">
-                                        <img id="b${tab.id}" class="miniAction" src="${bookmark}" alt="BOOKMARK TAB">
-                                    </td>
-                                </tr>
-                            </table>`;
-
-                        list.appendChild(listItem);
-
-                        btnIDs.push("c" + tab.id);
-                        btnIDs.push("b" + tab.id);
-                        btnIDs.push("v" + tab.id);
-
-                        document.getElementById("main").innerHTML = "";
-                        document.getElementById("main").appendChild(list);
-
-                        // MINI ACTIONS
-
-                        btnIDs.forEach((btnID) => {
-                            document.getElementById(btnID).addEventListener("click", () => {            
-                                switch (btnID.charAt(0)) {
-                                    case 'b':
-                                        bookmarkTab(parseInt(btnID.substring(1)));
-                                        break;
-                                    case 'v':
-                                        viewTab(parseInt(btnID.substring(1)));
-                                        break;
-                                    case 'c':
-                                        closeTab(parseInt(btnID.substring(1)));
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            });
-                        });
-
-                        liid++;
-                    });
+        chrome.windows.getAll({populate:true}, function(windows) {
+            windows.forEach(function(window) {
+                window.tabs.forEach(function(tab) {
+                    addTabToList(tab, window);
                 });
             });
+
+            checkEmptyMain(`
+                <h2 id="emptyPage">NO OPEN TABS</h2>
+            `);
         });
+
+        resetNavClassNames();
+        document.getElementById("openTabsScreen").className += " selectedNav";
     });
-
-    checkEmptyMain(`
-        <h2 id="emptyPage">NO OPEN TABS</h2>
-    `);
-
-    resetNavClassNames();
-    document.getElementById("openTabsScreen").className += " selectedNav";
 }
 
 function bookmarksScreen() {
@@ -150,13 +97,15 @@ function recentlyClosedScreen() {
 
 function viewTab(tabID) {
     chrome.tabs.update(tabID, {active: true});
+    chrome.tabs.get(tabID, (tab) => {
+        chrome.windows.update(tab.windowId, {focused: true});
+    });
 }
 
 function closeTab(tabID) {
     chrome.tabs.remove(tabID, () => {
-        chrome.tabs.getCurrent((t) => {
-            chrome.tabs.reload(t.id);
-        });
+        var elem = document.getElementById("l" + tabID);
+        elem.parentNode.removeChild(elem);
     });
 }
 
@@ -234,9 +183,63 @@ function bookmarkSelectedTabs() { // TODO Bookmark selected
 
 // OTHER
 
+function addTabToList(tab, window) {
+    chrome.windows.getAll({populate:true}, function(windows) {
+        if (tab.status === "complete") {
+            var listItem = document.createElement("li");
+            var bookmark = "../images/bookmark.png";
+
+            chrome.bookmarks.search({ url: tab.url}, (res) => {
+                if (tab.url.includes("chrome-extension://") || tab.url.includes("chrome://")) {
+                    return;
+                }
+
+                chrome.bookmarks.search({title: bookmarksFolderName}, (ab) => {
+                    res.forEach((b) => {
+                        if (b.parentId === ab[0].id) {
+                            bookmark = "../images/bookmarked.png";
+                        }
+                    });
+
+                    var itemID = window.tabs.map(e => e.id).indexOf(tab.id);
+                    var wColor = windowColors[windows.map(e => e.id).indexOf(tab.windowId) % windowColors.length];
+
+                    for (i = windows.map(e => e.id).indexOf(tab.windowId) - 1; i >= 0; i--) {
+                        itemID += windows[i].tabs.length - 1;                        
+                    }
+
+                    listItem.classList.add("tabItem");
+                    listItem.classList.add(itemID);
+                    listItem.id = "l" + tab.id;
+                    listItem.style.borderLeftColor = wColor;
+
+                    listItem.innerHTML = `
+                        <table class="tabItemTable">
+                            <tr>
+                                <td><img class="favIcon" src=${tab.favIconUrl} alt="ICO"></td>
+                                <td><span class="tabTitle">${tab.title}</span></td>
+                                <td rowspan='2' class="miniActions">
+                                    <img id="c${tab.id}" class="miniAction" src="../images/close.png" alt="CLOSE TAB">
+                                    <img id="v${tab.id}" class="miniAction" src="../images/view.png" alt="VIEW TAB">
+                                    <img id="b${tab.id}" class="miniAction" src="${bookmark}" alt="BOOKMARK TAB">
+                                </td>
+                            </tr>
+                        </table>
+                    `;
+
+                    document.getElementById("allTabsList").appendChild(listItem);
+                    allTabs.push(tab);
+                });
+            });
+        }
+    });
+}
+
 function checkEmptyMain(blankPage) {
-    if (document.getElementById("main").childElementCount === 0) {
-        document.getElementById("main").innerHTML = blankPage;
+    var mainElem = document.getElementById("main");
+
+    if (mainElem.childElementCount === 0 || mainElem.firstChild.childElementCount === 0) {
+        mainElem.innerHTML = blankPage;
     }
 }
 
@@ -253,20 +256,18 @@ function reloadAkira() {
     });
 }
 
-function dropEvents(c) {
-    let drops = document.querySelectorAll(c);
-
-    drops.forEach((drop) => {
-        try {
-            drop.removeEventListener('click', handlers[drop.id]);
-        } catch (error) {
-            console.log("Could not remove listener");
-        }
-    });
-}
-
 function openGit() {
     chrome.tabs.create({url: "https://github.com/recoskyler/Akira", active: true});
+}
+
+function checkForSelected() {
+    if (selectedTabs.length >= 2) {
+        document.getElementById("footer").style.display = "block";
+    } else {
+        document.getElementById("footer").style.display = "none";
+    }
+
+    document.getElementById("selectedCount").innerHTML = `${selectedTabs.length} Selected`;
 }
 
 // SELECTION AND MOUSE CLICK/DRAG/ETC...
@@ -282,7 +283,7 @@ function reCalc() { //This will restyle the div
     div.style.height = y4 - y3 + 'px';
 }
 
-function checkIntersections() {
+function checkIntersections() { // TODO Add functionality to "Bookmark Selected" and "Close Selected" buttons
     // NAV CLICK
 
     var els = ["openTabsScreen", "recentlyClosedScreen", "bookmarksScreen", "aboutScreen"];
@@ -294,7 +295,7 @@ function checkIntersections() {
         var rect2 = div.getBoundingClientRect();
         var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 
-        if (overlap && !mouseHold && mousePress && !ctrlDown && !shiftDown){
+        if (overlap && !mouseHold && mousePress && !ctrlDown && !shiftDown) {
             document.getElementById("main").innerHTML = "";
             fus[i]();
         }
@@ -310,7 +311,7 @@ function checkIntersections() {
         var rect2 = div.getBoundingClientRect();
         var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 
-        if (overlap && mouseHold && !shiftDown) {
+        if (overlap && !mouseHold && mousePress && !ctrlDown && !shiftDown) {
             switch (item.id.charAt(0)) {
                 case 'b':
                     bookmarkTab(parseInt(item.id.substring(1)));
@@ -333,6 +334,10 @@ function checkIntersections() {
     var otherButtonFNs = [openGit];
 
     for (i = 0; i < otherButtonIDs.length; i++) {
+        if (!document.getElementById(otherButtonIDs[i])) {
+            continue;
+        }
+
         var item = document.getElementById(otherButtonIDs[i]);
         var rect1 = item.getBoundingClientRect();
         var rect2 = div.getBoundingClientRect();
@@ -365,32 +370,44 @@ function checkIntersections() {
             item.classList.toggle("selected");
 
             if (lastsliid != -1 && shiftDown && ctrlDown) {
-                if (lastsliid > item.classList[1]) {
-                    for (k = lastsliid; k > item.classList[1]; k--) {
-                        var sei = document.getElementsByClassName(k);
-                        
-                        if (k == lastsliid) {
-                            continue;
+                if (parseInt(lastsliid) > parseInt(item.classList[1])) {
+                    for (k = parseInt(lastsliid); k > parseInt(item.classList[1]); k--) {
+                        if (document.getElementsByClassName(k).length > 0) {
+                            var sei = document.getElementsByClassName(k);
+                            
+                            if (k == lastsliid) {
+                                continue;
+                            }
+        
+                            sei[0].classList.toggle("selected");
                         }
-    
-                        sei[0].classList.toggle("selected");
                     }
-                } else if (lastsliid < item.classList[1]) {
-                    for (k = lastsliid; k < item.classList[1]; k++) {
-                        var sei = document.getElementsByClassName(k);
-    
-                        if (k == lastsliid) {
-                            continue;
+                } else if (parseInt(lastsliid) < parseInt(item.classList[1])) {
+                    for (k = parseInt(lastsliid); k < parseInt(item.classList[1]); k++) {
+                        if (document.getElementsByClassName(k).length > 0) {
+                            var sei = document.getElementsByClassName(k);
+        
+                            if (k == lastsliid) {
+                                continue;
+                            }
+        
+                            sei[0].classList.toggle("selected");
                         }
-    
-                        sei[0].classList.toggle("selected");
                     }
                 }
             }
             
             lastsliid = item.classList[1];
         }
+
+        if (item.classList.contains("selected") && !selectedTabs.includes(item)) {
+            selectedTabs.push(item);
+        } else if (selectedTabs.includes(item) && !item.classList.contains("selected")) {
+            selectedTabs.splice(selectedTabs.indexOf(item), 1);
+        }
     }
+
+    checkForSelected();
 }
 
 /////
@@ -444,16 +461,16 @@ window.onload = function() {
 
         this.mousePress = true;
         this.div.hidden = 0; //Unhide the div
-        this.x1 = event.clientX; //Set the initial X
-        this.y1 = event.clientY; //Set the initial Y
+        this.x1 = event.pageX; //Set the initial X
+        this.y1 = event.pageY; //Set the initial Y
         this.reCalc();
         this.checkIntersections();
     });
 
     // MOUSE MOVE
     this.document.addEventListener("mousemove", (event) => {
-        this.x2 = event.clientX; //Update the current position X
-        this.y2 = event.clientY; //Update the current position Y
+        this.x2 = event.pageX; //Update the current position X
+        this.y2 = event.pageY; //Update the current position Y
 
         if (this.mousePress) {
             this.reCalc();
@@ -467,29 +484,23 @@ window.onload = function() {
     // MOUSE UP
     this.document.addEventListener("mouseup", (event) => {
         clearTimeout(timer);
-
-        if (event.button === 0) {
-            this.mouseHold = false;
-            this.mousePress = false;
-            this.x1 = 0; //Set the initial X
-            this.y1 = 0; //Set the initial Y
-            this.div.hidden = 1; //Hide the div
-            this.reCalc();
-        }
+        this.mouseHold = false;
+        this.mousePress = false;
+        this.div.hidden = 1; //Hide the div
+        this.reCalc();
     });
 
     // TODO Optimize this part VVVVVV
 
-    chrome.tabs.onUpdated.addListener(openTabsScreen);
-    chrome.tabs.onCreated.addListener(reloadAkira);
-    chrome.tabs.onRemoved.addListener(reloadAkira);
-    chrome.tabs.onMoved.addListener(reloadAkira);
-    chrome.tabs.onReplaced.addListener(reloadAkira);
-    chrome.tabs.onDetached.addListener(reloadAkira);
-    chrome.tabs.onAttached.addListener(reloadAkira);
-    chrome.windows.onCreated.addListener(reloadAkira);
-
-    /////
-
     openTabsScreen();
+
+    chrome.tabs.onUpdated.addListener(this.openTabsScreen);
+    chrome.tabs.onCreated.addListener(this.reloadAkira);
+    chrome.tabs.onRemoved.addListener((tid) => {
+        var elem = document.getElementById("l" + tid);
+        elem.parentNode.removeChild(elem);
+    });
+    chrome.tabs.onDetached.addListener(this.reloadAkira);
+    chrome.tabs.onAttached.addListener(this.reloadAkira);
+    chrome.windows.onCreated.addListener(this.reloadAkira);
 }

@@ -10,7 +10,7 @@ body {
     padding: 0;
     background-color: #212121;
     width: 300px;
-    height: 180px;
+    height: 200px;
 }
 
 #title {
@@ -40,7 +40,7 @@ button {
     font-size: medium;
     color: #EFEFEF;
     padding: 5px 20px;
-    margin: 20px auto;
+    margin: 30px auto;
     transition: border-color 0.1s, background-color 0.2s;
     transition-timing-function: ease-in-out;
     cursor: pointer;
@@ -48,8 +48,8 @@ button {
 }
 
 #manage {
-    background-color: #009688;
-    border: 2px solid #009688;
+    background-color: #E91E63;
+    border: 2px solid #E91E63;
 }
 
 #bookmarks {
@@ -57,9 +57,29 @@ button {
     border: 2px solid #3F51B5;
 }
 
+#bookmark {
+    background-color: transparent;
+    border: 2px solid #FF9800;
+}
+
+#bookmark:hover {
+    background-color: #E65100;
+    border: 2px solid #E65100;
+}
+
+#bookmarked {
+    background-color: #FF9800;
+    border: 2px solid #FF9800;
+}
+
+#bookmarked:hover {
+    background-color: #E65100;
+    border: 2px solid #E65100;
+}
+
 #manage:hover {
-    border-color: #004D40;
-    background-color: #004D40;
+    border-color: #AD1457;
+    background-color: #AD1457;
 }
 
 #bookmarks:hover {
