@@ -2,7 +2,7 @@ html {
     margin: 0;
     padding: 0;
     font-family: 'Montserrat', sans-serif;
-    min-width: 800px;
+    min-width: 805px;
     color: #EFEFEF;
     max-width: 100vw;
     max-height: 100vh;
@@ -79,7 +79,6 @@ nav {
 
 .tabItem {
     background-color: #212121;
-    display: block;
     position: relative;
     width: 100%;
     height: 45px;
@@ -97,6 +96,14 @@ nav {
 
 .tabItem:hover {
     background-color: #333;
+}
+
+.vis {
+    display: block;
+}
+
+.hid {
+    display: none;
 }
 
 .miniActions {
@@ -184,6 +191,37 @@ nav {
     font-family: 'Montserrat', sans-serif;
     font-weight: normal;
     user-select: none;
+}
+
+#searchBox:focus {
+    border-color: #303F9F;
+}
+
+#searchBox:hover {
+    background-color: #444444;
+}
+
+#searchBox {
+    display: block;
+    position: relative;
+    margin: 5px auto;
+    min-width: 800px;
+    width: 50%;
+    padding: 10px 3px 10px 50px;
+    background-color: #333;
+    background-image: url("../images/search.png");
+    background-position: top left;
+    background-repeat: no-repeat;
+    background-size: contain;
+    outline: none;
+    border: none;
+    color: #EFEFEF;
+    font-size: medium;
+    font-family: 'Montserrat', sans-serif;
+    transition: 0.1s background-color, 0.1s border-color;
+    transition-timing-function: ease-in-out;
+    border: 1.5px solid transparent;
+    border-radius: 3px;
 }
 
 table {

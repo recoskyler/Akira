@@ -30,13 +30,20 @@ var manifestData = chrome.runtime.getManifest();
 var bookmarksFolderName = "Akira Bookmarks";
 var shiftDown = false, ctrlDown = false, mouseHold = false, mousePress = false;
 var lastSelectedItemID = -1;
-var div, x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+var div, searchBox, x1 = 0, y1 = 0, x2 = 0, y2 = 0;
 var threshold = 185;
 var timer = setTimeout(() => {}, 1);
 var selectedTabs = [];
 var allTabs = [];
 var windowColors = ["#3F51B5", "#F44336", "#4CAF12", "#03A9F4", "#FFC107"];
 var updateTabF = emptyFunction;
+
+const grouping = {
+    NONE: 'none',
+    WINDOW: 'window',
+    PAGE: 'page',
+    BOTH: 'both'
+};
 
 // NAV SCREENS
 
@@ -127,7 +134,10 @@ function viewTab(tabID) {
 function closeTab(tabID) {
     chrome.tabs.remove(tabID, () => {
         var elem = document.getElementById("l" + tabID);
-        elem.parentNode.removeChild(elem);
+
+        if (elem) {
+            elem.parentNode.removeChild(elem);
+        }
     });
 }
 
@@ -206,6 +216,10 @@ function bookmarkSelectedTabs() { // TODO Bookmark selected
 // DYNAMIC LIST
 
 function addTabToList(tab) {
+    if (document.getElementById("l" + tab.id)) {
+        return;
+    }
+
     chrome.windows.getAll({populate:true}, function(windows) {
         if (tab.status === "complete") {
             var listItem = document.createElement("li");
@@ -227,6 +241,11 @@ function addTabToList(tab) {
                     // Get Color and id
                     var itemID = window.tabs.map(e => e.id).indexOf(tab.id);
                     var wColor = windowColors[windows.map(e => e.id).indexOf(tab.windowId) % windowColors.length];
+                    var favIcon = tab.favIconUrl;
+
+                    if (favIcon == "" || favIcon == null || favIcon == undefined) {
+                        favIcon = "../images/page.png";
+                    }
 
                     for (i = windows.map(e => e.id).indexOf(tab.windowId) - 1; i >= 0; i--) {
                         itemID += windows[i].tabs.length - 1;                        
@@ -234,13 +253,15 @@ function addTabToList(tab) {
 
                     listItem.classList.add("tabItem");
                     listItem.classList.add(itemID);
+                    listItem.classList.add("vis");
+                    listItem.classList.add(tab.url);
                     listItem.id = "l" + tab.id;
                     listItem.style.borderLeftColor = wColor;
 
                     listItem.innerHTML = `
                         <table class="tabItemTable">
                             <tr>
-                                <td><img id="f${tab.id}" class="favIcon" src=${tab.favIconUrl} alt="ICO"></td>
+                                <td><img id="f${tab.id}" class="favIcon" src=${favIcon} alt="ICO"></td>
                                 <td><span id="t${tab.id}" class="tabTitle">${tab.title}</span></td>
                                 <td rowspan='2' class="miniActions">
                                     <img id="c${tab.id}" class="miniAction" src="../images/close.png" alt="CLOSE TAB">
@@ -277,6 +298,7 @@ function updateTab(tab) {
 
     if (!document.getElementById("l" + tab.id)) {
         addTabToList(tab);
+        return;
     }
 
     chrome.windows.getAll({populate:true}, function(windows) {
@@ -310,6 +332,32 @@ function updateTab(tab) {
             });
         });
     });
+}
+
+function searchTabs() {
+    var tabList = document.getElementsByClassName("tabItem");
+
+    if (tabList.length >= 1) {
+        for (i = 0; i < tabList.length; i++) {
+            var tabItem = document.getElementsByClassName("tabItem")[i];
+            var tabTitle = document.getElementById("t" + tabItem.id.substr(1)).innerHTML.toLowerCase();
+            var tabUrlTemp = tabItem.classList[3].toLowerCase().split("/")[2].split(".");
+            var tabUrl = "";
+            var query = searchBox.value.toLowerCase();
+
+            for (k = 0; k < tabUrlTemp.length - 1; k++) {
+                if (tabUrlTemp[k] !== "www") {
+                    tabUrl = tabUrl + "." + tabUrlTemp[k];
+                }
+            }
+
+            if (tabUrl.includes(query) || tabTitle.includes(query) || query === "" || query === null || query === undefined) {
+                tabItem.classList.replace("hid", "vis");
+            } else {
+                tabItem.classList.replace("vis", "hid");
+            }
+        }
+    }
 }
 
 // OTHER
@@ -499,6 +547,7 @@ function checkIntersections() { // TODO Add functionality to "Bookmark Selected"
 
 window.onload = function() {
     div = document.getElementById('selectionRect');
+    searchBox = document.getElementById('searchBox');
 
     // CTRL, A, B, C DOWN
     this.document.addEventListener("keydown", (event) => {
@@ -575,9 +624,14 @@ window.onload = function() {
         this.reCalc();
     });
 
+    searchBox.addEventListener("input", () => {
+        this.searchTabs();
+    });
+
     openTabsScreen();
 
     chrome.tabs.onUpdated.addListener((tid, change, tab) => {
+        this.searchTabs();
         this.updateTabF(tab);
     });
     chrome.tabs.onRemoved.addListener((tid) => {

@@ -8,6 +8,6 @@ Currently in development, **DO NOT INSTALL!!!**
 
 [Trello Board](https://trello.com/b/ZJ3Vsw7h/akira)
 
-## Disclaimer
+## About
 
-The icon is from [IconFinder](https://www.iconfinder.com/icons/3525372/challenge_checkmate_chess_horse_knight_recreation_strategy_icon), and is open source *Creative Commons Attribution 3.0 Unported (CC BY 3.0)*. It was edited with licensed version of Adobe Photoshop CC 2020.
+The icons are from [IconFinder](https://www.iconfinder.com/), and are open source *Creative Commons Attribution 3.0 Unported (CC BY 3.0)*. They were edited with licensed version of Adobe Photoshop CC 2020.
