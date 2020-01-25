@@ -19,7 +19,7 @@ function openTab(tabURL) {
     });
 }
 
-function bookmarkTab(tabID) {
+function bookmarkTab() {
     chrome.tabs.query({active: true, currentWindow: true}, (t) => {
         chrome.bookmarks.search({title: bookmarksFolderName}, (res) => {
             if (res.length > 0) {
@@ -88,7 +88,7 @@ window.onload = function() {
     chrome.tabs.query({active: true, currentWindow: true}, (tab) => {
         if (tab.length > 0) {
             if (tab[0].url.includes("chrome://") || tab[0].url.includes("chrome-extension://")) {
-                this.document.getElementById("bookmark").style.display = "none";
+                document.getElementById("bookmark").style.display = "none";
             }
 
             chrome.bookmarks.search({title: bookmarksFolderName}, (res) => {
@@ -96,8 +96,8 @@ window.onload = function() {
                     chrome.bookmarks.search({url: tab[0].url}, (bmres) => {
                         bmres.forEach((bm) => {
                             if (bm.parentId === res[0].id) {
-                                this.document.getElementById("bookmark").innerHTML = "Remove Bookmark";
-                                this.document.getElementById("bookmark").id = "bookmarked";
+                                document.getElementById("bookmark").innerHTML = "Remove Bookmark";
+                                document.getElementById("bookmark").id = "bookmarked";
                             }
                         });
                     });
