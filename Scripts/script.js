@@ -23,8 +23,19 @@ WINDOWS
 g123 : <ul>   Window group
 w123 : <div>  Window group block
 n123 : <span> Window group title
+____________________________________
+PAGES
+------------------------------------
+p123 : <ul>   Page group
 
 */
+
+const groups = {
+    NONE: 'allTabsList',
+    WINDOW: 'w',
+    PAGE: 'p',
+    BOTH: 'both'
+};
 
 var manifestData = chrome.runtime.getManifest();
 var bookmarksFolderName = "Akira Bookmarks";
@@ -37,13 +48,7 @@ var selectedTabs = [];
 var allTabs = [];
 var windowColors = ["#3F51B5", "#F44336", "#4CAF12", "#03A9F4", "#FFC107"];
 var updateTabF = emptyFunction;
-
-const grouping = {
-    NONE: 'none',
-    WINDOW: 'window',
-    PAGE: 'page',
-    BOTH: 'both'
-};
+var groupingMode = groups.NONE;
 
 // NAV SCREENS
 
@@ -91,8 +96,6 @@ function openTabsScreen() {
                 addTabToList(tab);
             });
         });
-
-        checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
 
         resetNavClassNames();
         document.getElementById("openTabsScreen").className += " selectedNav";
@@ -217,6 +220,10 @@ function bookmarkSelectedTabs() { // TODO Bookmark selected
 
 function addTabToList(tab) {
     if (document.getElementById("l" + tab.id)) {
+        if (!allTabs.includes(tab)) {
+            allTabs.push(tab);
+        }
+
         return;
     }
 
@@ -281,6 +288,8 @@ function addTabToList(tab) {
                     allTabs.push(tab);
 
                     updateTabF = updateTab;
+
+                    checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
                 });
             });
         }
@@ -327,10 +336,14 @@ function updateTab(tab) {
                         allTabs[allTabs.map(e => e.id).indexOf(tab.id)] = tab;
                     }
 
+                    checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
+
                     return;
                 }
             });
         });
+
+        checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
     });
 }
 
@@ -357,6 +370,8 @@ function searchTabs() {
                 tabItem.classList.replace("vis", "hid");
             }
         }
+
+        checkEmptyMain(`<h2 id="emptyPage">NO TAB RESULTS FOR "${searchBox.value}"</h2>`);
     }
 }
 
@@ -364,9 +379,26 @@ function searchTabs() {
 
 function checkEmptyMain(blankPage) {
     var mainElem = document.getElementById("main");
+    var empty = document.getElementById("emptyCont");
 
-    if (mainElem.childElementCount === 0) {
-        mainElem.innerHTML = blankPage;
+    if (empty) {
+        empty.parentNode.removeChild(empty);
+    }
+
+    if (allTabs.length === 0 || document.getElementsByClassName("vis").length === 0) {
+        var elem = document.createElement("div");
+        elem.innerHTML = blankPage;
+        elem.id = "emptyCont";
+
+        mainElem.appendChild(elem);
+    }
+    
+    if (allTabs.length === 0) {
+        document.getElementById("optionsCont").style.display = "none";
+        document.getElementById("searchBox").style.display = "none";
+    } else if (document.getElementsByClassName("vis").length > 0) {
+        document.getElementById("optionsCont").style.display = "flex";
+        document.getElementById("searchBox").style.display = "block";
     }
 }
 
@@ -463,7 +495,7 @@ function checkIntersections() { // TODO Add functionality to "Bookmark Selected"
 
     // OTHER BUTTONS
 
-    var otherButtonIDs = ["git"];
+    var otherButtonIDs = ["git", "byWindow", "byPage", "sortAlpha", "bookmarkSelected", "closeSelected", "showPinned"];
     var otherButtonFNs = [openGit];
 
     for (i = 0; i < otherButtonIDs.length; i++) {
@@ -628,20 +660,34 @@ window.onload = function() {
         this.searchTabs();
     });
 
+
     openTabsScreen();
+
 
     chrome.tabs.onUpdated.addListener((tid, change, tab) => {
         this.searchTabs();
         this.updateTabF(tab);
     });
+
     chrome.tabs.onRemoved.addListener((tid) => {
         var elem = document.getElementById("l" + tid);
+
+        if (allTabs.map(e => e.id).indexOf(tid) >= 0) {
+            allTabs.splice(allTabs.map(e => e.id).indexOf(tid), 1);
+        }
 
         if (elem) {
             elem.parentNode.removeChild(elem);
         }
+
+        this.console.log(this.allTabs);
+
+        checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
     });
+
     chrome.tabs.onDetached.addListener(this.reloadAkira);
+
     chrome.tabs.onAttached.addListener(this.reloadAkira);
+
     chrome.windows.onCreated.addListener(this.reloadAkira);
 }

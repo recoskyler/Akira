@@ -437,3 +437,56 @@ h1 {
     user-select: none;
     -webkit-user-drag: none;
 }
+
+#optionsCont {
+    display: flex;
+    position: relative;
+    width: 60%;
+    margin: 0 auto;
+    padding-top: 10px;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    align-content: center;
+    min-width: 800px;
+}
+
+.optionsBox {
+    display: block;
+    margin-right: 40px;
+}
+
+.optionTitle {
+    display: block;
+    position: relative;
+    font-size: larger;
+    font-family: 'Montserrat', sans-serif;
+    margin-left: 10px;
+}
+
+.optionButton {
+    display: inline-block;
+    position: relative;
+    width: 120px;
+    text-align: center;
+    transition: 0.2s background-color;
+}
+
+.deselectedOption {
+    background-color: #aaa;
+    color: #222;
+}
+
+.deselectedOption:hover {
+    background-color: #828282;
+}
+
+.selectedOption {
+    background-color: #3F51B5;
+    color: #EFEFEF;
+}
+
+.selectedOption:hover {
+    background-color: #303F9F;
+}
