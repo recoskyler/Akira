@@ -1,3 +1,31 @@
+/*
+AKIRA
+
+By Recoskyler - Adil Atalay Hamamcıoğlu
+
+MIT License
+
+Copyright (c) 2020 Adil Atalay Hamamcıoğlu
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 var bookmarksFolderName = "Akira Bookmarks";
 
 function openTab(tabURL) {
@@ -35,17 +63,34 @@ function bookmarkTab() {
 
 function bookmarkTabF(tab, pid) {
     chrome.bookmarks.search({url: tab.url}, (res) => {
-        if (res.length >= 1) {
+        if (res.length > 0) {
+            var found = false;
+
             res.forEach((b) => {
-                chrome.bookmarks.remove(b.id, () => {
-                    this.document.getElementById("bookmarked").innerHTML = "Bookmark";
-                    this.document.getElementById("bookmarked").id = "bookmark";
-                });
+                if (b.parentId === pid) {
+                    found = true;
+
+                    chrome.bookmarks.remove(b.id, () => {
+                        document.getElementById("bookmarked").innerHTML = "Bookmark";
+                        document.getElementById("bookmarked").id = "bookmark";
+
+                        return;
+                    });
+
+                    return;
+                }
             });
+
+            if (!found) {
+                chrome.bookmarks.create({title: tab.title, url: tab.url, parentId: pid}, () => {
+                    document.getElementById("bookmark").innerHTML = "Remove Bookmark";
+                    document.getElementById("bookmark").id = "bookmarked";
+                });
+            }
         } else {
             chrome.bookmarks.create({title: tab.title, url: tab.url, parentId: pid}, () => {
-                this.document.getElementById("bookmark").innerHTML = "Remove Bookmark";
-                this.document.getElementById("bookmark").id = "bookmarked";
+                document.getElementById("bookmark").innerHTML = "Remove Bookmark";
+                document.getElementById("bookmark").id = "bookmarked";
             });
         }
     });
@@ -85,24 +130,28 @@ window.onload = function() {
         el.addEventListener('click', this.bookmarkTab);
     }
 
-    chrome.tabs.query({active: true, currentWindow: true}, (tab) => {
-        if (tab.length > 0) {
-            if (tab[0].url.includes("chrome://") || tab[0].url.includes("chrome-extension://")) {
-                document.getElementById("bookmark").style.display = "none";
-            }
-
-            chrome.bookmarks.search({title: bookmarksFolderName}, (res) => {
-                if (res.length > 0) {
-                    chrome.bookmarks.search({url: tab[0].url}, (bmres) => {
-                        bmres.forEach((bm) => {
-                            if (bm.parentId === res[0].id) {
-                                document.getElementById("bookmark").innerHTML = "Remove Bookmark";
-                                document.getElementById("bookmark").id = "bookmarked";
-                            }
-                        });
-                    });
+    try {
+        chrome.tabs.query({active: true, currentWindow: true}, (tab) => {
+            if (tab.length > 0) {
+                if (tab[0].url.includes("chrome://") || tab[0].url.includes("chrome-extension://")) {
+                    document.getElementById("bookmark").style.display = "none";
                 }
-            });
-        }
-    });
+    
+                chrome.bookmarks.search({title: bookmarksFolderName}, (res) => {
+                    if (res.length > 0) {
+                        chrome.bookmarks.search({url: tab[0].url}, (bmres) => {
+                            bmres.forEach((bm) => {
+                                if (bm.parentId === res[0].id) {
+                                    document.getElementById("bookmark").innerHTML = "Remove Bookmark";
+                                    document.getElementById("bookmark").id = "bookmarked";
+                                }
+                            });
+                        });
+                    }
+                });
+            }
+        });
+    } catch (error) {
+
+    }
 }

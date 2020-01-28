@@ -1,7 +1,30 @@
-// AKIRA
-//
-// By Recoskyler - Adil Atalay Hamamcıoğlu
-// 2020
+/*
+AKIRA
+
+By Recoskyler - Adil Atalay Hamamcıoğlu
+
+MIT License
+
+Copyright (c) 2020 Adil Atalay Hamamcıoğlu
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 
 /*
 
@@ -47,8 +70,8 @@ var timer = setTimeout(() => {}, 1);
 var selectedTabs = [];
 var allTabs = [];
 var windowColors = ["#3F51B5", "#F44336", "#4CAF12", "#03A9F4", "#FFC107"];
-var updateTabF = emptyFunction;
 var groupingMode = groups.NONE;
+var firstTime = true;
 
 // NAV SCREENS
 
@@ -79,23 +102,25 @@ function aboutScreen() {
 }
 
 function openTabsScreen() {
+    var tabList = document.createElement("ul");
+    var myNode = document.getElementById("main");
+
+    tabList.id = "allTabsList";
+
+    while (myNode.firstChild) {
+        myNode.removeChild(myNode.firstChild);
+    }
+
+    myNode.appendChild(tabList);
+
     chrome.windows.getAll({populate:true}, function(windows) {
-        var tabList = document.createElement("ul");
-        var myNode = document.getElementById("main");
-
-        tabList.id = "allTabsList";
-
-        while (myNode.firstChild) {
-            myNode.removeChild(myNode.firstChild);
-        }
-
-        myNode.appendChild(tabList);
-
         windows.forEach(function(window) {
             window.tabs.forEach(function(tab) {
                 addTabToList(tab);
             });
         });
+
+        checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
 
         resetNavClassNames();
         document.getElementById("openTabsScreen").className += " selectedNav";
@@ -160,15 +185,30 @@ function bookmarkTab(tabID) {
 
 function bookmarkTabF(tab, pid) {
     chrome.bookmarks.search({url: tab.url}, (res) => {
-        if (res.length >= 1) {
+        if (res.length > 0) {
+            var found = false;
+
             res.forEach((b) => {
-                chrome.bookmarks.remove(b.id, () => {
-                    openTabsScreen();
-                });
+                if (b.parentId === pid) {
+                    found = true;
+
+                    chrome.bookmarks.remove(b.id, () => {
+                        updateTab(tab);
+                        return;
+                    });
+
+                    return;
+                }
             });
+
+            if (!found) {
+                chrome.bookmarks.create({title: tab.title, url: tab.url, parentId: pid}, () => {
+                    updateTab(tab);
+                });
+            }
         } else {
             chrome.bookmarks.create({title: tab.title, url: tab.url, parentId: pid}, () => {
-                openTabsScreen();
+                updateTab(tab);
             });
         }
     });
@@ -196,24 +236,19 @@ function selectAllTabItems() {
     }
 }
 
-function closeSelectedTabs() { // TODO Close selected
-    var se = document.getElementsByClassName("tabItem");
+function closeSelectedTabs() {
+    selectedTabs.forEach((tab) => {
+        closeTab(tab.id);
+    });
 
-    for (i = 0; i < se.length; i++) {
-        if (!se[i].classList.contains("selected")) {
-            se[i].classList.add("selected");
-        }
-    }
+    selectedTabs = [];
+    checkForSelected();
 }
 
-function bookmarkSelectedTabs() { // TODO Bookmark selected
-    var se = document.getElementsByClassName("tabItem");
-
-    for (i = 0; i < se.length; i++) {
-        if (!se[i].classList.contains("selected")) {
-            se[i].classList.add("selected");
-        }
-    }
+function bookmarkSelectedTabs() {
+    selectedTabs.forEach((tab) => {
+        bookmarkTab(tab.id);
+    });
 }
 
 // DYNAMIC LIST
@@ -231,7 +266,6 @@ function addTabToList(tab) {
         if (tab.status === "complete") {
             var listItem = document.createElement("li");
             var bookmark = "../images/bookmark.png";
-            var window = windows[windows.map(e => e.id).indexOf(tab.windowId)];
 
             chrome.bookmarks.search({ url: tab.url}, (res) => {
                 if (tab.url.includes("chrome-extension://") || tab.url.includes("chrome://")) {
@@ -246,7 +280,6 @@ function addTabToList(tab) {
                     });
 
                     // Get Color and id
-                    var itemID = window.tabs.map(e => e.id).indexOf(tab.id);
                     var wColor = windowColors[windows.map(e => e.id).indexOf(tab.windowId) % windowColors.length];
                     var favIcon = tab.favIconUrl;
 
@@ -254,12 +287,7 @@ function addTabToList(tab) {
                         favIcon = "../images/page.png";
                     }
 
-                    for (i = windows.map(e => e.id).indexOf(tab.windowId) - 1; i >= 0; i--) {
-                        itemID += windows[i].tabs.length - 1;                        
-                    }
-
                     listItem.classList.add("tabItem");
-                    listItem.classList.add(itemID);
                     listItem.classList.add("vis");
                     listItem.classList.add(tab.url);
                     listItem.id = "l" + tab.id;
@@ -283,11 +311,8 @@ function addTabToList(tab) {
 
                     if (allTabsList) {
                         allTabsList.appendChild(listItem);
+                        allTabs.push(tab);
                     }
-
-                    allTabs.push(tab);
-
-                    updateTabF = updateTab;
 
                     checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
                 });
@@ -297,7 +322,7 @@ function addTabToList(tab) {
 }
 
 function updateTab(tab) {
-    if (tab.status !== "complete") {
+    if (tab.status === "loading") {
         return;
     }
 
@@ -310,40 +335,51 @@ function updateTab(tab) {
         return;
     }
 
-    chrome.windows.getAll({populate:true}, function(windows) {
-        windows.forEach(function(window) {
-            window.tabs.forEach(function(item) {
+    chrome.windows.getAll({populate:true}, function(windows) { // TODO Fix newly added tabs not sorting
+        for (i = 0; i < windows.length; i++) {
+            var window = windows[i];
+
+            for (k = 0; k < window.tabs.length; k++) {
+                var item = window.tabs[k];
+
                 if (item.id === tab.id) {
+                    var bookmark = "../images/bookmark.png";
+                    var tabBookmark = document.getElementById("b" + tab.id);
                     var tabTitle = document.getElementById("t" + tab.id);
                     var tabIcon = document.getElementById("f" + tab.id);
                     var tabItem = document.getElementById("l" + tab.id);
-                    var itemID = window.tabs.map(e => e.id).indexOf(tab.id);
                     var wColor = windowColors[windows.map(e => e.id).indexOf(tab.windowId) % windowColors.length];
-
-                    for (i = windows.map(e => e.id).indexOf(tab.windowId) - 1; i >= 0; i--) {
-                        itemID += windows[i].tabs.length - 1;
-                    }
 
                     if (tabItem) {
                         tabTitle.innerHTML = tab.title;
-                        tabIcon.src = tab.favIconUrl;
+                        tabIcon.src = tab.favIconUrl ? tab.favIconUrl : "../images/page.png";
                         tabItem.style.borderLeftColor = wColor;
 
-                        if (itemID !== tabItem.classList[1]) {
-                            openTabsScreen();
+                        console.log(allTabs.map(e => e.id).indexOf(tab.id));
+
+                        if (allTabs.map(e => e.id).indexOf(tab.id) >= 0) {
+                            allTabs[allTabs.map(e => e.id).indexOf(tab.id)] = tab;
+                        } else {
+                            allTabs.push(tab);
                         }
 
-                        allTabs[allTabs.map(e => e.id).indexOf(tab.id)] = tab;
+                        chrome.bookmarks.search({url: tab.url}, (res) => {            
+                            chrome.bookmarks.search({title: bookmarksFolderName}, (ab) => {
+                                res.forEach((b) => {
+                                    if (b.parentId === ab[0].id) {
+                                        bookmark = "../images/bookmarked.png";
+                                    }
+                                });
+
+                                tabBookmark.src = bookmark;
+
+                                checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
+                            });
+                        });
                     }
-
-                    checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
-
-                    return;
                 }
-            });
-        });
-
-        checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
+            }
+        }
     });
 }
 
@@ -354,7 +390,7 @@ function searchTabs() {
         for (i = 0; i < tabList.length; i++) {
             var tabItem = document.getElementsByClassName("tabItem")[i];
             var tabTitle = document.getElementById("t" + tabItem.id.substr(1)).innerHTML.toLowerCase();
-            var tabUrlTemp = tabItem.classList[3].toLowerCase().split("/")[2].split(".");
+            var tabUrlTemp = tabItem.classList[2].toLowerCase().split("/")[2].split(".");
             var tabUrl = "";
             var query = searchBox.value.toLowerCase();
 
@@ -376,6 +412,18 @@ function searchTabs() {
 }
 
 // OTHER
+
+function removeNull(arr) {
+    var newArr = [];
+
+    arr.forEach((e) => {
+        if (e !== null || e !== empty || e !== undefined) {
+            newArr.push(e);
+        }
+    });
+
+    return newArr;
+}
 
 function checkEmptyMain(blankPage) {
     var mainElem = document.getElementById("main");
@@ -433,7 +481,7 @@ function emptyFunction(a = 1, b = 2, c = 3, d = 4) {}
 
 // SELECTION AND MOUSE CLICK/DRAG/ETC...
 
-function reCalc() { //This will restyle the div
+function reCalc() {
     var x3 = Math.min(x1,x2); //Smaller X
     var x4 = Math.max(x1,x2); //Larger X
     var y3 = Math.min(y1,y2); //Smaller Y
@@ -444,7 +492,7 @@ function reCalc() { //This will restyle the div
     div.style.height = y4 - y3 + 'px';
 }
 
-function checkIntersections() { // TODO Add functionality to "Bookmark Selected" and "Close Selected" buttons
+function checkIntersections() {
     // NAV CLICK
 
     var els = ["openTabsScreen", "recentlyClosedScreen", "bookmarksScreen", "aboutScreen"];
@@ -495,8 +543,8 @@ function checkIntersections() { // TODO Add functionality to "Bookmark Selected"
 
     // OTHER BUTTONS
 
-    var otherButtonIDs = ["git", "byWindow", "byPage", "sortAlpha", "bookmarkSelected", "closeSelected", "showPinned"];
-    var otherButtonFNs = [openGit];
+    var otherButtonIDs = ["git", "byWindow", "byPage", "sortAlpha", "bookmarkSelected", "closeSelected"];
+    var otherButtonFNs = [openGit, emptyFunction, emptyFunction, emptyFunction, bookmarkSelectedTabs, closeSelectedTabs];
 
     for (i = 0; i < otherButtonIDs.length; i++) {
         if (!document.getElementById(otherButtonIDs[i])) {
@@ -520,6 +568,7 @@ function checkIntersections() { // TODO Add functionality to "Bookmark Selected"
     }
 
     var tabItems = document.getElementsByClassName("tabItem");
+    tabItems = Array.from(tabItems);
 
     for (i = 0; i < tabItems.length; i++) {
         var item = tabItems[i];
@@ -535,40 +584,47 @@ function checkIntersections() { // TODO Add functionality to "Bookmark Selected"
             item.classList.toggle("selected");
 
             if (lastSelectedItemID != -1 && shiftDown && ctrlDown) {
-                if (parseInt(lastSelectedItemID) > parseInt(item.classList[1])) {
-                    for (k = parseInt(lastSelectedItemID); k > parseInt(item.classList[1]); k--) {
-                        if (document.getElementsByClassName(k).length > 0) {
-                            var sei = document.getElementsByClassName(k);
-                            
-                            if (k == lastSelectedItemID) {
+                if (lastSelectedItemID > tabItems.indexOf(item)) {
+                    for (k = lastSelectedItemID; k > tabItems.indexOf(item); k--) {
+                        var sei = document.getElementById(tabItems[k].id);
+
+                        if (sei) {
+                            if (k === lastSelectedItemID) {
                                 continue;
                             }
         
-                            sei[0].classList.toggle("selected");
+                            sei.classList.toggle("selected");
                         }
                     }
-                } else if (parseInt(lastSelectedItemID) < parseInt(item.classList[1])) {
-                    for (k = parseInt(lastSelectedItemID); k < parseInt(item.classList[1]); k++) {
-                        if (document.getElementsByClassName(k).length > 0) {
-                            var sei = document.getElementsByClassName(k);
-        
-                            if (k == lastSelectedItemID) {
+                } else if (lastSelectedItemID < tabItems.indexOf(item)) {
+                    for (k = lastSelectedItemID; k < tabItems.indexOf(item); k++) {
+                        var sei = document.getElementById(tabItems[k].id);
+
+                        if (sei) {        
+                            if (k === lastSelectedItemID) {
                                 continue;
                             }
         
-                            sei[0].classList.toggle("selected");
+                            sei.classList.toggle("selected");
                         }
                     }
                 }
             }
             
-            lastSelectedItemID = item.classList[1];
+            if (tabItems.length > 0) {
+                lastSelectedItemID = tabItems.indexOf(item);
+            } else {
+                lastSelectedItemID = -1;
+            }
+            
         }
 
-        if (item.classList.contains("selected") && !selectedTabs.includes(item)) {
-            selectedTabs.push(item);
-        } else if (selectedTabs.includes(item) && !item.classList.contains("selected")) {
-            selectedTabs.splice(selectedTabs.indexOf(item), 1);
+        var tab = allTabs[allTabs.map(e => e.id).indexOf(parseInt(item.id.substr(1)))];
+
+        if (item.classList.contains("selected") && !selectedTabs.includes(tab)) {
+            selectedTabs.push(tab);
+        } else if (selectedTabs.includes(tab) && !item.classList.contains("selected")) {
+            selectedTabs.splice(selectedTabs.indexOf(tab), 1);
         }
     }
 
@@ -661,26 +717,36 @@ window.onload = function() {
     });
 
 
-    openTabsScreen();
+    if (this.firstTime) {
+        this.firstTime = false;
+        openTabsScreen();
+    }
 
+
+    chrome.tabs.onCreated.addListener((tab) => {
+        this.console.log("ADDING");
+        this.addTabToList(tab);
+    });
 
     chrome.tabs.onUpdated.addListener((tid, change, tab) => {
         this.searchTabs();
-        this.updateTabF(tab);
+        this.updateTab(tab);
     });
 
     chrome.tabs.onRemoved.addListener((tid) => {
         var elem = document.getElementById("l" + tid);
 
-        if (allTabs.map(e => e.id).indexOf(tid) >= 0) {
-            allTabs.splice(allTabs.map(e => e.id).indexOf(tid), 1);
+        while (this.allTabs.map(e => e.id).indexOf(tid) >= 0) {
+            this.allTabs.splice(this.allTabs.map(e => e.id).indexOf(tid), 1);
+        }
+
+        while (this.selectedTabs.map(e => e.id).indexOf(tid) >= 0) {
+            this.selectedTabs.splice(this.selectedTabs.map(e => e.id).indexOf(tid), 1);
         }
 
         if (elem) {
             elem.parentNode.removeChild(elem);
         }
-
-        this.console.log(this.allTabs);
 
         checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
     });
