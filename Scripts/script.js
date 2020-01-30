@@ -30,7 +30,7 @@ SOFTWARE.
 
 HTML Element ID Formats:
 ====================================
-[LETTER CODE][ID]
+[LETTER CODE][ID/URL]
 ____________________________________
 TABS
 ------------------------------------
@@ -43,22 +43,13 @@ t123 : <span> Title of tab
 ____________________________________
 WINDOWS
 ------------------------------------
-g123 : <ul>   Window group
-w123 : <div>  Window group block
-n123 : <span> Window group title
+w123 : <ul>   Window group
 ____________________________________
 PAGES
 ------------------------------------
-p123 : <ul>   Page group
+pURL : <ul>   Page group
 
 */
-
-const groups = {
-    NONE: 'allTabsList',
-    WINDOW: 'w',
-    PAGE: 'p',
-    BOTH: 'both'
-};
 
 var manifestData = chrome.runtime.getManifest();
 var bookmarksFolderName = "Akira Bookmarks";
@@ -70,12 +61,18 @@ var timer = setTimeout(() => {}, 1);
 var selectedTabs = [];
 var allTabs = [];
 var windowColors = ["#3F51B5", "#F44336", "#4CAF12", "#03A9F4", "#FFC107"];
-var groupingMode = groups.NONE;
+var groupingMode = 0; // 0 - NONE : 1 - BY WINDOW : 2 - BY PAGE : 3 - BY BOTH
 var firstTime = true;
+var sortByName = false;
+var screen = 0;
+var recentActions = []; // c - closed, b - bookmarked, r - bookmark removed
+var recentlyClosed = [];
 
 // NAV SCREENS
 
 function aboutScreen() {
+    checkEmptyMain("");
+
     document.getElementById('main').innerHTML = `
         <img src="./images/icon_512.png" id="logo" alt="AKIRA"/>
 
@@ -102,23 +99,161 @@ function aboutScreen() {
 }
 
 function openTabsScreen() {
-    var tabList = document.createElement("ul");
-    var myNode = document.getElementById("main");
+    // REMOVE ALL CHILDREN OF MAIN
 
-    tabList.id = "allTabsList";
+    checkEmptyGroup();
+
+    var myNode = document.getElementById("main");
 
     while (myNode.firstChild) {
         myNode.removeChild(myNode.firstChild);
     }
 
-    myNode.appendChild(tabList);
+    if (document.getElementById("byWindow")) {
+        document.getElementById("byWindow").style.display = "inline-block";
+    }
+
+    if (document.getElementById("searchBox")) {
+        document.getElementById("searchBox").style.display = "block";
+    }
+
+    /////
 
     chrome.windows.getAll({populate:true}, function(windows) {
+        var tabs = [];
+        var pages = [];
+        var windowIDs = [];
+
+        // GET ALL TABS, WINDOWS, AND POPULATE ARRAYS
+
         windows.forEach(function(window) {
+            var normalTabCount = 0;
+
             window.tabs.forEach(function(tab) {
-                addTabToList(tab);
+                if (!tab.url.includes("chrome-extension://") && !tab.url.includes("chrome://")) {
+                    var tabUrl = getPageDomain(tab.url);
+
+                    tabs.push(tab);
+                    normalTabCount++;
+
+                    if (!pages.includes(window.id + "|" + tabUrl)) {
+                        pages.push(window.id + "|" + tabUrl);
+                    }
+                }
             });
+
+            if (normalTabCount > 0) {
+                windowIDs.push(window.id);
+            }
         });
+
+        // SORT ALPHABETICALLY
+
+        if (sortByName) {
+            tabs.sort(function(a, b) {
+                var textA = a.title.toUpperCase();
+                var textB = b.title.toUpperCase();
+                return (textA < textB) ? -1 : (textA >= textB) ? 1 : 0;
+            });
+
+            pages.sort(function(a, b) {
+                var textA = a.split("|")[1].toUpperCase();
+                var textB = b.split("|")[1].toUpperCase();
+                return (textA < textB) ? -1 : (textA >= textB) ? 1 : 0;
+            });
+        }
+
+        // GROUPING
+
+        if (groupingMode === 1) { // BY WINDOW
+            var wCount = 1;
+
+            windowIDs.forEach((wid) => {
+                var wCont = document.createElement("div");
+                var wTitle = document.createElement("span");
+                var wList = document.createElement("ul");
+
+                wCont.className = "groupCont windowCont";
+                wList.className = "tabList";
+                wTitle.className = "groupTitle";
+                wList.id = "w" + wid;
+                wTitle.id = "wt" + wid;
+                wTitle.innerHTML = `Window  ${wCount}`;
+
+                wCont.appendChild(wTitle);
+                wCont.appendChild(wList);
+                myNode.appendChild(wCont);
+
+                wCount++;
+            });
+        } else if (groupingMode === 2) { // BY PAGE
+            pages.forEach((purl) => {
+                var pCont = document.createElement("div");
+                var pTitle = document.createElement("span");
+                var pList = document.createElement("ul");
+
+                pCont.className = "groupCont pageCont";
+                pList.className = "tabList";
+                pTitle.className = "groupTitle";
+                pList.id = "p|" + purl;
+                pTitle.innerHTML = purl.split("|")[1];
+
+                pCont.appendChild(pTitle);
+                pCont.appendChild(pList);
+                myNode.appendChild(pCont);
+            });
+        } else if (groupingMode === 3) { // BY BOTH
+            var wCount = 1;
+
+            windowIDs.forEach((wid) => {
+                var wCont = document.createElement("div");
+                var wTitle = document.createElement("span");
+
+                wCont.className = "groupCont windowCont";
+                wTitle.className = "groupTitle";
+                wTitle.id = "wt" + wid;
+                wTitle.innerHTML = `Window  ${wCount}`;
+
+                wCont.appendChild(wTitle);
+
+                pages.forEach((purl) => {
+                    if (purl.split("|")[0] == wid) {
+                        var pCont = document.createElement("div");
+                        var pTitle = document.createElement("span");
+                        var pList = document.createElement("ul");
+        
+                        pCont.className = "groupCont pageCont";
+                        pList.className = "tabList";
+                        pTitle.className = "groupTitle";
+                        pList.id = "p|" + purl;
+                        pTitle.innerHTML = purl.split("|")[1];
+        
+                        pCont.appendChild(pTitle);
+                        pCont.appendChild(pList);
+                        wCont.appendChild(pCont);
+                    }
+                });
+
+                myNode.appendChild(wCont);
+
+                wCount++;
+            });
+        } else { // BY NONE
+            var tabList = document.createElement("ul");
+
+            tabList.id = "allTabsList";
+            tabList.className = "tabList";
+
+            myNode.appendChild(tabList);
+        }
+
+        // ADD TABS TO LIST
+
+        tabs.forEach((tab) => {
+            addTabToList(tab);
+        });
+
+        // CHECK EMPTY IN CASE THERE ARE 0 TABS
 
         checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
 
@@ -142,9 +277,89 @@ function bookmarksScreen() {
 }
 
 function recentlyClosedScreen() {
-    checkEmptyMain(`
-        <h2 id="emptyPage">NO RECENTLY CLOSED TABS</h2>
-    `);
+    // REMOVE ALL CHILDREN OF MAIN
+
+    checkEmptyGroup();
+
+    var myNode = document.getElementById("main");
+    var pages = [];
+    var tabs = [];
+
+    while (myNode.firstChild) {
+        myNode.removeChild(myNode.firstChild);
+    }
+
+    if (document.getElementById("byWindow")) {
+        document.getElementById("byWindow").style.display = "none";
+    }
+
+    if (document.getElementById("searchBox")) {
+        document.getElementById("searchBox").style.display = "none";
+    }
+
+    if (document.getElementById("footer")) {
+        document.getElementById("footer").style.display = "none";
+    }
+
+    /////
+
+    recentlyClosed.forEach((tab) => {
+        if (!tab.url.includes("chrome-extension://") && !tab.url.includes("chrome://")) {
+            var tabUrl = getPageDomain(tab.url);
+            tabs.push(tab);
+
+            if (!pages.includes(tabUrl)) {
+                pages.push(tabUrl);
+            }
+        }
+
+        addTabToRecent(tab);
+    });
+
+    if (sortByName) {
+        tabs.sort(function(a, b) {
+            var textA = a.title.toUpperCase();
+            var textB = b.title.toUpperCase();
+            return (textA < textB) ? -1 : (textA >= textB) ? 1 : 0;
+        });
+
+        pages.sort(function(a, b) {
+            var textA = a.toUpperCase();
+            var textB = b.toUpperCase();
+            return (textA < textB) ? -1 : (textA >= textB) ? 1 : 0;
+        });
+    }
+
+    if (groupingMode >= 2) { // BY PAGE
+        pages.forEach((purl) => {
+            var pCont = document.createElement("div");
+            var pTitle = document.createElement("span");
+            var pList = document.createElement("ul");
+
+            pCont.className = "groupCont pageCont";
+            pList.className = "tabList";
+            pTitle.className = "groupTitle";
+            pList.id = "p|" + purl;
+            pTitle.innerHTML = purl;
+
+            pCont.appendChild(pTitle);
+            pCont.appendChild(pList);
+            myNode.appendChild(pCont);
+        });
+    } else { // BY NONE
+        var tabList = document.createElement("ul");
+
+        tabList.id = "allTabsList";
+        tabList.className = "tabList";
+
+        myNode.appendChild(tabList);
+    }
+
+    recentlyClosed.forEach((tab) => {
+        addTabToRecent(tab);
+    });
+
+    checkEmptyMain(`<h2 id="emptyPage">NO RECENTLY CLOSED TABS</h2>`);
 
     resetNavClassNames();
     document.getElementById("recentlyClosedScreen").className += " selectedNav";
@@ -165,6 +380,7 @@ function closeTab(tabID) {
 
         if (elem) {
             elem.parentNode.removeChild(elem);
+            checkEmptyGroup();
         }
     });
 }
@@ -214,6 +430,10 @@ function bookmarkTabF(tab, pid) {
     });
 }
 
+function openTab(url) {
+    chrome.tabs.create({url: url, active: true});
+}
+
 // TAB ACTIONS
 
 function deselectAllTabItems() {
@@ -222,6 +442,10 @@ function deselectAllTabItems() {
     for (i = 0; i < se.length; i++) {
         if (se[i].classList.contains("selected")) {
             se[i].classList.remove("selected");
+        }
+
+        if (selectedTabs.map(e => e.id).indexOf(parseInt(se[i].id.substr(1))) >= 0) {
+            selectedTabs.splice(selectedTabs.map(e => e.id).indexOf(parseInt(se[i].id.substr(1))), 1);
         }
     }
 }
@@ -233,13 +457,36 @@ function selectAllTabItems() {
         if (!se[i].classList.contains("selected")) {
             se[i].classList.add("selected");
         }
+
+        if (!selectedTabs.includes(allTabs[allTabs.map(e => e.id).indexOf(parseInt(se[i].id.substr(1)))])) {
+            selectedTabs.push(allTabs[allTabs.map(e => e.id).indexOf(parseInt(se[i].id.substr(1)))]);
+        }
     }
+
+    checkForSelected();
 }
 
 function closeSelectedTabs() {
+    if (selectedTabs.length === 0) return;
+
+    recentActions = [];
+    var count = 0;
+
     selectedTabs.forEach((tab) => {
+        recentlyClosed.push({title: tab.title, url: tab.url, favIconUrl: tab.favIconUrl});
+        recentActions.push(tab.url);
+        count++;
+
         closeTab(tab.id);
     });
+
+    if (recentlyClosed.length > 300) {
+        //recentlyClosed = recentlyClosed.slice(recentlyClosed.length - 301, recentlyClosed.length - 1);
+    }
+
+    showUndo("Closed " + count + " tabs.");
+
+    chrome.storage.sync.set({key: JSON.stringify(recentlyClosed)});
 
     selectedTabs = [];
     checkForSelected();
@@ -253,7 +500,49 @@ function bookmarkSelectedTabs() {
 
 // DYNAMIC LIST
 
+function addTabToRecent(tab) {
+    if (screen !== 1) return;
+
+    var listItem = document.createElement("li");
+    var favIcon = tab.favIconUrl;
+
+    if (favIcon == "" || favIcon == null || favIcon == undefined) {
+        favIcon = "../images/page.png";
+    }
+
+    listItem.classList.add("tabItem");
+    listItem.classList.add("vis");
+    listItem.classList.add(tab.url);
+    
+    listItem.innerHTML = `
+        <table class="tabItemTable">
+            <tr>
+                <td><img class="favIcon" src=${favIcon} alt="ICO"></td>
+                <td><span class="tabTitle">${tab.title}</span></td>
+                <td rowspan='2' class="miniActions">
+                    <img id="o${tab.url}" class="miniAction" src="../images/open.png" alt="REOPEN TAB">
+                </td>
+            </tr>
+        </table>
+    `;
+
+    var pageList = document.getElementById("p|" + getPageDomain(tab.url));
+    var allTabsList = document.getElementById("allTabsList");
+
+    if (pageList) {
+        pageList.appendChild(listItem);
+        allTabs.push(tab);
+    } else if (allTabsList) {
+        allTabsList.appendChild(listItem);
+        allTabs.push(tab);
+    }
+
+    checkEmptyMain(`<h2 id="emptyPage">NO RECENTLY CLOSED TABS</h2>`);
+}
+
 function addTabToList(tab) {
+    if (screen > 1) return;
+
     if (document.getElementById("l" + tab.id)) {
         if (!allTabs.includes(tab)) {
             allTabs.push(tab);
@@ -292,7 +581,7 @@ function addTabToList(tab) {
                     listItem.classList.add(tab.url);
                     listItem.id = "l" + tab.id;
                     listItem.style.borderLeftColor = wColor;
-
+                    
                     listItem.innerHTML = `
                         <table class="tabItemTable">
                             <tr>
@@ -307,9 +596,23 @@ function addTabToList(tab) {
                         </table>
                     `;
 
+                    var pageList = document.getElementById("p|" + tab.windowId + "|" + getPageDomain(tab.url));
+                    var windowList = document.getElementById("w" + tab.windowId);
                     var allTabsList = document.getElementById("allTabsList");
 
-                    if (allTabsList) {
+                    if (pageList) {
+                        pageList.appendChild(listItem);
+                        
+                        if (document.getElementById("wt" + tab.windowId)) {
+                            document.getElementById("wt" + tab.windowId).style.backgroundColor = wColor;
+                        }
+
+                        allTabs.push(tab);
+                    } else if (windowList) {
+                        windowList.appendChild(listItem);
+                        document.getElementById("wt" + tab.windowId).style.backgroundColor = wColor;
+                        allTabs.push(tab);
+                    } else if (allTabsList) {
                         allTabsList.appendChild(listItem);
                         allTabs.push(tab);
                     }
@@ -322,11 +625,18 @@ function addTabToList(tab) {
 }
 
 function updateTab(tab) {
+    if (screen > 0) return;
+
     if (tab.status === "loading") {
         return;
     }
 
     if (tab.url.includes("chrome-extension://") || tab.url.includes("chrome://")) {
+        return;
+    }
+
+    if (!document.getElementById("allTabsList") && document.getElementsByClassName("tabList").length === 0) {
+        openTabsScreen();
         return;
     }
 
@@ -355,8 +665,6 @@ function updateTab(tab) {
                         tabIcon.src = tab.favIconUrl ? tab.favIconUrl : "../images/page.png";
                         tabItem.style.borderLeftColor = wColor;
 
-                        console.log(allTabs.map(e => e.id).indexOf(tab.id));
-
                         if (allTabs.map(e => e.id).indexOf(tab.id) >= 0) {
                             allTabs[allTabs.map(e => e.id).indexOf(tab.id)] = tab;
                         } else {
@@ -373,6 +681,7 @@ function updateTab(tab) {
 
                                 tabBookmark.src = bookmark;
 
+                                checkEmptyGroup();
                                 checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
                             });
                         });
@@ -384,21 +693,16 @@ function updateTab(tab) {
 }
 
 function searchTabs() {
+    if (screen > 0) return;
+
     var tabList = document.getElementsByClassName("tabItem");
 
     if (tabList.length >= 1) {
         for (i = 0; i < tabList.length; i++) {
             var tabItem = document.getElementsByClassName("tabItem")[i];
             var tabTitle = document.getElementById("t" + tabItem.id.substr(1)).innerHTML.toLowerCase();
-            var tabUrlTemp = tabItem.classList[2].toLowerCase().split("/")[2].split(".");
-            var tabUrl = "";
+            var tabUrl = getPageDomain(tabItem.classList[2]);
             var query = searchBox.value.toLowerCase();
-
-            for (k = 0; k < tabUrlTemp.length - 1; k++) {
-                if (tabUrlTemp[k] !== "www") {
-                    tabUrl = tabUrl + "." + tabUrlTemp[k];
-                }
-            }
 
             if (tabUrl.includes(query) || tabTitle.includes(query) || query === "" || query === null || query === undefined) {
                 tabItem.classList.replace("hid", "vis");
@@ -412,6 +716,55 @@ function searchTabs() {
 }
 
 // OTHER
+
+function showUndo(text) {
+    var undoCont = document.getElementById("undoCont");
+    var undoText = document.getElementById("undoText");
+
+    if (undoCont && undoText) {
+        undoText.innerHTML = text;
+        undoCont.style.display = "block";
+
+        setTimeout(hideUndo, 4000);
+    }
+}
+
+function hideUndo() {
+    var undoCont = document.getElementById("undoCont");
+
+    if (undoCont) {
+        undoCont.style.display = "none";
+    }
+}
+
+function undo() {
+    mouseHold = false;
+    mousePress = false;
+    div.hidden = 1;
+
+    recentActions.forEach((url) => {
+        chrome.tabs.create({url: url});
+    });
+}
+
+function getPageDomain(url) {
+    if (url.includes("chrome-extension://") || url.includes("chrome://") || url == undefined || url == null || url == "") {
+        return "CHROME";
+    }
+
+    var tabUrlTemp = url.split("/")[2].split(".");
+    var tabUrl = "";
+
+    for (k = 0; k < tabUrlTemp.length - 1; k++) {
+        if (tabUrlTemp[k] !== "www") {
+            tabUrl = tabUrl + "." + tabUrlTemp[k];
+        }
+    }
+
+    tabUrl = tabUrl.substr(0, 1) === "." ? tabUrl.substr(1) : tabUrl;
+
+    return tabUrl;
+}
 
 function removeNull(arr) {
     var newArr = [];
@@ -441,12 +794,16 @@ function checkEmptyMain(blankPage) {
         mainElem.appendChild(elem);
     }
     
-    if (allTabs.length === 0) {
+    if (allTabs.length === 0 || screen > 1 || Array.from(document.getElementsByClassName("tabItem")).length === 0) {
         document.getElementById("optionsCont").style.display = "none";
-        document.getElementById("searchBox").style.display = "none";
     } else if (document.getElementsByClassName("vis").length > 0) {
         document.getElementById("optionsCont").style.display = "flex";
+    }
+
+    if (screen === 0) {
         document.getElementById("searchBox").style.display = "block";
+    } else {
+        document.getElementById("searchBox").style.display = "none";
     }
 }
 
@@ -458,6 +815,11 @@ function resetNavClassNames() {
 }
 
 function reloadAkira() {
+    if (screen === 1) {
+        recentlyClosedScreen();
+        return;
+    }
+
     chrome.tabs.getCurrent((t) => {
         chrome.tabs.reload(t.id);
     });
@@ -468,7 +830,7 @@ function openGit() {
 }
 
 function checkForSelected() {
-    if (selectedTabs.length >= 2) {
+    if (selectedTabs.length >= 1) {
         document.getElementById("footer").style.display = "block";
     } else {
         document.getElementById("footer").style.display = "none";
@@ -477,7 +839,97 @@ function checkForSelected() {
     document.getElementById("selectedCount").innerHTML = `${selectedTabs.length} Selected`;
 }
 
-function emptyFunction(a = 1, b = 2, c = 3, d = 4) {}
+function emptyFunction(a = 1, b = 2, c = 3, d = 4) {
+}
+
+function checkEmptyGroup() {
+    var groups = document.getElementsByClassName("tabList");
+    var wGroups = document.getElementsByClassName("groupCont");
+
+    for (i = 0; i < groups.length; i++) {
+        group = groups[i];
+
+        if (group.childElementCount === 0) {
+            const parent = group.parentNode;
+            parent.removeChild(group);
+
+            if (parent.id !== "main") {
+                parent.parentNode.removeChild(parent);
+            }
+        }
+    }
+
+    for (i = 0; i < wGroups.length; i++) {
+        group = wGroups[i];
+
+        if (group.childElementCount === 1) {
+            const parent = group.parentNode;
+            parent.removeChild(group);
+
+            if (parent.id !== "main") {
+                parent.parentNode.removeChild(parent);
+            }
+        }
+    }
+
+    checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
+}
+
+// GROUPING TOGGLES
+
+function toggleByWindow() {
+    document.getElementById("byWindow").classList.toggle("selectedOption");
+
+    if (groupingMode === 2) {
+        groupingMode = 3;
+    } else if (groupingMode === 0) {
+        groupingMode = 1;
+    } else if (groupingMode === 1) {
+        groupingMode = 0;
+    } else if (groupingMode === 3) {
+        groupingMode = 2;
+    }
+
+    document.getElementById("searchBox").value = "";
+
+    openTabsScreen();
+}
+
+function toggleByPage() {
+    document.getElementById("byPage").classList.toggle("selectedOption");
+    
+    if (groupingMode === 1) {
+        groupingMode = 3;
+    } else if (groupingMode === 0) {
+        groupingMode = 2;
+    } else if (groupingMode === 2) {
+        groupingMode = 0;
+    } else if (groupingMode === 3) {
+        groupingMode = 1;
+    }
+
+    document.getElementById("searchBox").value = "";
+
+    if (screen === 0) {
+        openTabsScreen();
+    } else if (screen === 1) {
+        recentlyClosedScreen();
+    }
+}
+
+function toggleByName() {
+    document.getElementById("sortAlpha").classList.toggle("selectedOption");
+    
+    sortByName = sortByName === true ? false : true;
+
+    document.getElementById("searchBox").value = "";
+
+    if (screen === 0) {
+        openTabsScreen();
+    } else if (screen === 1) {
+        recentlyClosedScreen();
+    }
+}
 
 // SELECTION AND MOUSE CLICK/DRAG/ETC...
 
@@ -505,7 +957,10 @@ function checkIntersections() {
         var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 
         if (overlap && !mouseHold && mousePress && !ctrlDown && !shiftDown) {
+            screen = i;
             document.getElementById("main").innerHTML = "";
+            selectedTabs = [];
+            allTabs = [];
             fus[i]();
         }
     }
@@ -533,7 +988,28 @@ function checkIntersections() {
                     viewTab(parseInt(item.id.substring(1)));
                     break;
                 case 'c':
+                    var title = document.getElementById("t" + item.id.substring(1)).innerHTML;
+                    var favIcon = document.getElementById("f" + item.id.substring(1)).src;
+                    var url = document.getElementById("l" + item.id.substring(1)).classList[2];
+
+                    recentActions = [];
+
+                    recentlyClosed.push({title: title, url: url, favIconUrl: favIcon});
+                    recentActions.push(url);
+
+                    if (recentlyClosed.length > 300) {
+                        //recentlyClosed = recentlyClosed.slice(recentlyClosed.length - 301, recentlyClosed.length - 1);
+                    }
+
+                    if (screen === 1) recentlyClosedScreen();
+                
+                    showUndo("Closed tab.");
+                
+                    chrome.storage.sync.set({key: JSON.stringify(recentlyClosed)});
                     closeTab(parseInt(item.id.substring(1)));
+                    break;
+                case 'o':
+                    openTab(parseInt(item.id.substring(1)));
                     break;
                 default:
                     break;
@@ -543,8 +1019,8 @@ function checkIntersections() {
 
     // OTHER BUTTONS
 
-    var otherButtonIDs = ["git", "byWindow", "byPage", "sortAlpha", "bookmarkSelected", "closeSelected"];
-    var otherButtonFNs = [openGit, emptyFunction, emptyFunction, emptyFunction, bookmarkSelectedTabs, closeSelectedTabs];
+    var otherButtonIDs = ["git", "byWindow", "byPage", "sortAlpha", "bookmarkSelected", "closeSelected", "undoButton", "refresh"];
+    var otherButtonFNs = [openGit, toggleByWindow, toggleByPage, toggleByName, bookmarkSelectedTabs, closeSelectedTabs, undo, reloadAkira];
 
     for (i = 0; i < otherButtonIDs.length; i++) {
         if (!document.getElementById(otherButtonIDs[i])) {
@@ -562,6 +1038,8 @@ function checkIntersections() {
     }
 
     // TABS SELECT/CLICK
+
+    if (screen === 1) return;
 
     if ((mousePress && !mouseHold && !ctrlDown) || (mouseHold && !ctrlDown)) {
         deselectAllTabItems();
@@ -637,6 +1115,14 @@ window.onload = function() {
     div = document.getElementById('selectionRect');
     searchBox = document.getElementById('searchBox');
 
+    // LOAD RECENTLY CLOSED
+
+    chrome.storage.sync.get(['key'], function(result) {
+        if (result.key) {
+            recentlyClosed = JSON.parse(result.key);
+        }
+    });
+
     // CTRL, A, B, C DOWN
     this.document.addEventListener("keydown", (event) => {
         if (event.key === "Control") {
@@ -652,6 +1138,8 @@ window.onload = function() {
         } else if (event.key === "c" && this.ctrlDown && !this.shiftDown) {
             this.closeSelectedTabs();
         }
+
+        checkForSelected();
     });
 
     // CTRL UP
@@ -724,7 +1212,6 @@ window.onload = function() {
 
 
     chrome.tabs.onCreated.addListener((tab) => {
-        this.console.log("ADDING");
         this.addTabToList(tab);
     });
 
@@ -748,6 +1235,7 @@ window.onload = function() {
             elem.parentNode.removeChild(elem);
         }
 
+        checkEmptyGroup();
         checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
     });
 
@@ -755,5 +1243,17 @@ window.onload = function() {
 
     chrome.tabs.onAttached.addListener(this.reloadAkira);
 
-    chrome.windows.onCreated.addListener(this.reloadAkira);
+    chrome.windows.onCreated.addListener(this.openTabsScreen);
+
+    chrome.windows.onRemoved.addListener(this.openTabsScreen);
+
+    chrome.storage.onChanged.addListener((res) => {
+        if (this.recentlyClosed.length > 100) {
+            this.recentlyClosed = this.recentlyClosed.slice(this.recentlyClosed.length - 1, this.recentlyClosed.length - 300);
+
+            this.console.log(this.recentlyClosed);
+
+            chrome.storage.sync.set({key: JSON.stringify(recentlyClosed)});
+        }
+    });
 }
