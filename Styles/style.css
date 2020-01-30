@@ -332,7 +332,6 @@ tbody {
 }
 
 p {
-    font-size: 14px;
     text-align: center;
     user-select: none;
 }
@@ -635,4 +634,11 @@ h1 {
 
 #refresh:hover {
     background-color: #5C6BC0;
+}
+
+.mono {
+    word-wrap: normal;
+    font-size: large;
+    font-family: monospace;
+    letter-spacing: 1px;
 }

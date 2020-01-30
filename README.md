@@ -14,7 +14,7 @@ Currently in development, **DO NOT INSTALL!!!**
 
 Currently in development, **NOT PUBLISHED**
 
-1. Go to the [Chrome Web Store page](https://chrome.google.com/webstore/category/extensions) of the extension.
+1. Go to the [Chrome Web Store page](https://img.shields.io/chrome-web-store/v/aibadljmbjbjogomfgkoaoaighnmdghp?label=Chrome%20Web%20Store) of the extension.
 2. Click on **"Add to Chrome"** button.
 3. On the popup, click on **"Add Extension"** button.
 4. Done!
