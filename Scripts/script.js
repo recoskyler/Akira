@@ -113,10 +113,6 @@ function openTabsScreen() {
         document.getElementById("byWindow").style.display = "inline-block";
     }
 
-    if (document.getElementById("searchBox")) {
-        document.getElementById("searchBox").style.display = "block";
-    }
-
     /////
 
     chrome.windows.getAll({populate:true}, function(windows) {
@@ -530,9 +526,11 @@ function addTabToRecent(tab) {
     var allTabsList = document.getElementById("allTabsList");
 
     if (pageList) {
+        listItem.style.borderLeftColor = "#303030";
         pageList.appendChild(listItem);
         allTabs.push(tab);
     } else if (allTabsList) {
+        listItem.style.borderLeftColor = "#212121";
         allTabsList.appendChild(listItem);
         allTabs.push(tab);
     }
@@ -800,7 +798,7 @@ function checkEmptyMain(blankPage) {
         document.getElementById("optionsCont").style.display = "flex";
     }
 
-    if (screen === 0) {
+    if (screen === 0 && Array.from(document.getElementsByClassName("tabItem")).length > 0 && allTabs.length > 0) {
         document.getElementById("searchBox").style.display = "block";
     } else {
         document.getElementById("searchBox").style.display = "none";
