@@ -8,7 +8,7 @@ Akira is a Chrome extension for sorting -> viewing -> bookmarking/closing a bunc
 
 Currently being reviewed by Google, **NOT PUBLISHED**, It will stay "Unlisted" for a while, as it's still a bugs nest :/
 
-[[Trello Board](https://img.shields.io/badge/Trello%20Board-Akira-blue)](https://trello.com/b/ZJ3Vsw7h/akira)
+[![Trello Board](https://img.shields.io/badge/Trello%20Board-Akira-blue)](https://trello.com/b/ZJ3Vsw7h/akira)
 
 ## Installation
 
