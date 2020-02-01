@@ -6,13 +6,13 @@ Akira is a Chrome extension for sorting -> viewing -> bookmarking/closing a bunc
 
 ## Status
 
-Currently in development, **DO NOT INSTALL!!!**
+Currently being reviewed by Google, **NOT PUBLISHED**, It will stay "Unlisted" for a while, as it's still a bugs nest :/
 
-[Trello Board](https://trello.com/b/ZJ3Vsw7h/akira)
+[[Trello Board](https://img.shields.io/badge/Trello%20Board-Akira-blue)](https://trello.com/b/ZJ3Vsw7h/akira)
 
 ## Installation
 
-Currently in development, **NOT PUBLISHED**
+Currently being reviewed by Google, **NOT PUBLISHED**.
 
 1. Go to the [Chrome Web Store page](https://img.shields.io/chrome-web-store/v/aibadljmbjbjogomfgkoaoaighnmdghp?label=Chrome%20Web%20Store) of the extension.
 2. Click on **"Add to Chrome"** button.
@@ -24,6 +24,8 @@ Currently in development, **NOT PUBLISHED**
 All the icons are from [IconFinder](https://www.iconfinder.com/), and are *"Free for commercial use"*/*"Creative Commons Attribution 3.0 Unported (CC BY 3.0)"*. Some were edited with licensed version of Adobe Photoshop CC 2020.
 
 ## For Developers
+
+Please do not publish the same extension with little changes/a few small features under a different name; but you are free to experiment, add lots of new/complicated features and publish that as another extension. If you find any bugs, or have any ideas for new features, feel free to email me!
 
 1. Just clone the repo into some folder.
 2. Open Google Chrome, or your browser of choice with Chromium.
