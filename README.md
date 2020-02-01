@@ -4,6 +4,8 @@
 
 Akira is a Chrome extension for sorting -> viewing -> bookmarking/closing a bunch of tabs open on multiple windows. If you are the type who does not close any Chrome tabs, and opens a new window instead, you can use Akira to view all open tabs, group them by window/site, sort them alphabetically, then close the unnecessary, and bookmark the necessary ones.
 
+[Session Buddy](https://chrome.google.com/webstore/detail/session-buddy/edacconmaakjimmfgnblocblbcdcpbko) may be a better option if you want to manage your tabs, but Akira is just a project I developed to improve my skills, so I recommend you give Session Buddy a try first. (Not sponsored or anything, just saw it on Chrome Web Store, and thought it was cool)
+
 ## Status
 
 Currently being reviewed by Google, **NOT PUBLISHED**, It will stay "Unlisted" for a while, as it's still a bugs nest :/
@@ -21,7 +23,7 @@ Currently being reviewed by Google, **NOT PUBLISHED**.
 
 ## About
 
-All the icons are from [IconFinder](https://www.iconfinder.com/), and are *"Free for commercial use"*/*"Creative Commons Attribution 3.0 Unported (CC BY 3.0)"*. Some were edited with licensed version of Adobe Photoshop CC 2020.
+All the icons are from [IconFinder](https://www.iconfinder.com/), and are *"Free for commercial use"*/*"Creative Commons Attribution 3.0 Unported (CC BY 3.0)"*. Some were edited with licensed version of Adobe Photoshop CC 2020. I don't know if the name "Akira" is copyrighted, so if it's copyrighted, please notify me.
 
 ## For Developers
 
