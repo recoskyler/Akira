@@ -316,19 +316,25 @@ function recentlyClosedScreen() {
     }
 
     /////
+    if (recentlyClosed !== null && recentlyClosed !== undefined && recentlyClosed.length > 0) {
+        recentlyClosed.forEach((tab) => {
+            if (!tab.url.includes("chrome-extension://") && !tab.url.includes("chrome://")) {
+                var tabUrl = getPageDomain(tab.url);
+                tabs.push(tab);
 
-    recentlyClosed.forEach((tab) => {
-        if (!tab.url.includes("chrome-extension://") && !tab.url.includes("chrome://")) {
-            var tabUrl = getPageDomain(tab.url);
-            tabs.push(tab);
-
-            if (!pages.includes(tabUrl)) {
-                pages.push(tabUrl);
+                if (!pages.includes(tabUrl)) {
+                    pages.push(tabUrl);
+                }
             }
-        }
 
-        addTabToRecent(tab);
-    });
+            addTabToRecent(tab);
+        });
+    } else {
+        resetNavClassNames();
+        document.getElementById("recentlyClosedScreen").className += " selectedNav";
+        checkEmptyMain(`<h2 id="emptyPage">NO RECENTLY CLOSED TABS</h2>`);
+        return;
+    }
 
     if (sortByName) {
         tabs.sort(function(a, b) {
