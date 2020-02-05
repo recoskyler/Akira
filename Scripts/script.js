@@ -728,8 +728,13 @@ function searchTabs() {
 
             if (tabUrl.includes(query) || tabTitle.includes(query) || query === "" || query === null || query === undefined) {
                 tabItem.classList.replace("hid", "vis");
+                var titleElem = document.getElementById("t" + tabItem.id.substr(1)).children[0];
+                titleElem.innerHTML.replace(RegExp(query, "g"), `<mark>${query}</mark>`);
             } else {
                 tabItem.classList.replace("vis", "hid");
+                var titleElem = document.getElementById("t" + tabItem.id.substr(1)).children[0];
+                titleElem.innerHTML.replace(RegExp("<mark>", "g"), "");
+                titleElem.innerHTML.replace(RegExp("</mark>", "g"), "");
             }
         }
 
