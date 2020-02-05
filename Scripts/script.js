@@ -64,6 +64,7 @@ var windowColors = ["#3F51B5", "#F44336", "#4CAF12", "#03A9F4", "#FFC107"];
 var groupingMode = 0; // 0 - NONE : 1 - BY WINDOW : 2 - BY PAGE : 3 - BY BOTH
 var firstTime = true;
 var sortByName = false;
+var includeUrlInSearch = false;
 var screen = 0;
 var recentActions = []; // c - closed, b - bookmarked, r - bookmark removed
 var recentlyClosed = [];
@@ -722,19 +723,22 @@ function searchTabs() {
     if (tabList.length >= 1) {
         for (i = 0; i < tabList.length; i++) {
             var tabItem = document.getElementsByClassName("tabItem")[i];
-            var tabTitle = document.getElementById("t" + tabItem.id.substr(1)).innerHTML.toLowerCase();
+            var titleElem = document.getElementById("t" + tabItem.id.substr(1));
+            
+            titleElem.innerHTML = titleElem.innerHTML.replace(new RegExp("<mark>|</mark>", "g"), "");
+
+            var tabTitle = titleElem.innerHTML.toLowerCase();
             var tabUrl = getPageDomain(tabItem.classList[2]);
             var query = searchBox.value.toLowerCase();
+            var qRes = includeUrlInSearch ? (tabUrl.includes(query) || tabTitle.includes(query)) : tabTitle.includes(query);
 
-            if (tabUrl.includes(query) || tabTitle.includes(query) || query === "" || query === null || query === undefined) {
+            if (qRes || query === "" || query === null || query === undefined) {
                 tabItem.classList.replace("hid", "vis");
-                var titleElem = document.getElementById("t" + tabItem.id.substr(1)).children[0];
-                titleElem.innerHTML.replace(RegExp(query, "g"), `<mark>${query}</mark>`);
+                titleElem.innerHTML = titleElem.innerHTML.replace(new RegExp(query, "gi"), (match) => {
+                    return "<mark>" + match + "</mark>";
+                });
             } else {
                 tabItem.classList.replace("vis", "hid");
-                var titleElem = document.getElementById("t" + tabItem.id.substr(1)).children[0];
-                titleElem.innerHTML.replace(RegExp("<mark>", "g"), "");
-                titleElem.innerHTML.replace(RegExp("</mark>", "g"), "");
             }
         }
 
