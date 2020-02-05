@@ -386,6 +386,46 @@ function recentlyClosedScreen() {
     document.getElementById("recentlyClosedScreen").className += " selectedNav";
 }
 
+function settingsScreen() {
+    // REMOVE ALL CHILDREN OF MAIN
+
+    checkEmptyGroup();
+
+    var myNode = document.getElementById("main");
+
+    while (myNode.firstChild) {
+        myNode.removeChild(myNode.firstChild);
+    }
+
+    if (document.getElementById("byWindow")) {
+        document.getElementById("byWindow").style.display = "none";
+    }
+
+    if (document.getElementById("searchBox")) {
+        document.getElementById("searchBox").style.display = "none";
+    }
+
+    if (document.getElementById("footer")) {
+        document.getElementById("footer").style.display = "none";
+    }
+
+    /////
+
+    myNode.innerHTML = `
+        <ul>
+            <li>
+                <label class="container">Search term in page URLs.
+                    <input type="checkbox" checked="unchecked">
+                    <span class="checkmark"></span>
+                </label>
+            </li>
+        </ul>
+    `;
+
+    resetNavClassNames();
+    document.getElementById("settingsScreen").className += " selectedNav";
+}
+
 // MINI ACTIONS
 
 function viewTab(tabID) {
@@ -843,6 +883,7 @@ function resetNavClassNames() {
     document.getElementById("bookmarksScreen").className = "navButton leftMost";
     document.getElementById("openTabsScreen").className = "navButton leftMost";
     document.getElementById("recentlyClosedScreen").className = "navButton leftMost";
+    document.getElementById("settingsScreen").className = "navButton rightMost";
 }
 
 function reloadAkira() {
@@ -1139,8 +1180,8 @@ function checkIntersections() {
 
     // NAV CLICK
 
-    var els = ["openTabsScreen", "recentlyClosedScreen", "bookmarksScreen", "aboutScreen"];
-    var fus = [this.openTabsScreen, this.recentlyClosedScreen, this.bookmarksScreen, this.aboutScreen];
+    var els = ["openTabsScreen", "recentlyClosedScreen", "bookmarksScreen", "aboutScreen", "settingsScreen"];
+    var fus = [this.openTabsScreen, this.recentlyClosedScreen, this.bookmarksScreen, this.aboutScreen, this.settingsScreen];
 
     for (var i = 0; i < els.length; i++) {
         var el = document.getElementById(els[i]);
