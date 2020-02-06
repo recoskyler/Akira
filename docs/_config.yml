@@ -1,4 +1,4 @@
 theme: jekyll-theme-cayman
-title: "Akira"
-description: "Akira is a Chrome extension for sorting -> viewing -> bookmarking/closing a bunch of tabs that are open on multiple windows."
-show_downloads: "true"
+title: Akira
+description: Akira is a Chrome extension for sorting -> viewing -> bookmarking/closing a bunch of tabs that are open on multiple windows.
+show_downloads: true
