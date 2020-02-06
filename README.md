@@ -1,14 +1,14 @@
 # Akira
 
-[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/aibadljmbjbjogomfgkoaoaighnmdghp?label=Chrome%20Web%20Store)](https://chrome.google.com/webstore/category/extensions)
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/aibadljmbjbjogomfgkoaoaighnmdghp?label=Chrome%20Web%20Store)](https://chrome.google.com/webstore/detail/akira/aibadljmbjbjogomfgkoaoaighnmdghp?hl=en&authuser=0)
 
-Akira is a Chrome extension for sorting -> viewing -> bookmarking/closing a bunch of tabs open on multiple windows. If you are the type who does not close any Chrome tabs, and opens a new window instead, you can use Akira to view all open tabs, group them by window/site, sort them alphabetically, then close the unnecessary, and bookmark the necessary ones.
+Akira is a Google Chrome extension for sorting -> viewing -> bookmarking/closing a bunch of tabs open on multiple windows. If you are the type who does not close any Chrome tabs, and opens a new window instead, you can use Akira to view all open tabs, group them by window/site, sort them alphabetically, then close the unnecessary, and bookmark the necessary ones.
 
 [Session Buddy](https://chrome.google.com/webstore/detail/session-buddy/edacconmaakjimmfgnblocblbcdcpbko) may be a better option if you want to manage your tabs, but Akira is just a project I developed to improve my skills, so I recommend you give Session Buddy a try first. (Not sponsored or anything, just saw it on Chrome Web Store, and thought it was cool)
 
 ## Status
 
-Currently being reviewed by Google, **NOT PUBLISHED**, It will stay "Unlisted" for a while, as it's still a bugs nest :/
+Currently **UNLISTED** in Chrome Web Store, It will stay like this for a while, as it's still a bugs nest :/
 
 [![Trello Board](https://img.shields.io/badge/Trello%20Board-Akira-blue)](https://trello.com/b/ZJ3Vsw7h/akira)
 
@@ -16,7 +16,7 @@ Currently being reviewed by Google, **NOT PUBLISHED**, It will stay "Unlisted" f
 
 Currently being reviewed by Google, **NOT PUBLISHED**.
 
-1. Go to the [Chrome Web Store page](https://img.shields.io/chrome-web-store/v/aibadljmbjbjogomfgkoaoaighnmdghp?label=Chrome%20Web%20Store) of the extension.
+1. Go to the [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/aibadljmbjbjogomfgkoaoaighnmdghp?label=Chrome%20Web%20Store)](https://chrome.google.com/webstore/detail/akira/aibadljmbjbjogomfgkoaoaighnmdghp?hl=en&authuser=0) of the extension.
 2. Click on **"Add to Chrome"** button.
 3. On the popup, click on **"Add Extension"** button.
 4. Done!
@@ -36,11 +36,13 @@ Please do not publish the same extension with little changes/a few small feature
 5. Click on **"Load Unpacked"** button, on top left corner.
 6. Select the root folder of the repo (step 1), which contains the *"manifest.json"* file.
 
-## License
+## License And Disclaimer
 
 AKIRA
 
 By Recoskyler - Adil Atalay Hamamcıoğlu
+
+I am not responsible for any inconvenience. By adding Akira to Google Chrome, you take all responsibility.
 
 MIT License
 
