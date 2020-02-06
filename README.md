@@ -14,7 +14,7 @@ Currently **UNLISTED** in Chrome Web Store, It will stay like this for a while, 
 
 ## Installation
 
-Currently being reviewed by Google, **NOT PUBLISHED**.
+Currently **UNLISTED**.
 
 1. Go to the [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/aibadljmbjbjogomfgkoaoaighnmdghp?label=Chrome%20Web%20Store)](https://chrome.google.com/webstore/detail/akira/aibadljmbjbjogomfgkoaoaighnmdghp?hl=en&authuser=0) of the extension.
 2. Click on **"Add to Chrome"** button.
@@ -29,12 +29,13 @@ All the icons are from [IconFinder](https://www.iconfinder.com/), and are *"Free
 
 Please do not publish the same extension with little changes/a few small features under a different name; but you are free to experiment, add lots of new/complicated features and publish that as another extension. If you find any bugs, or have any ideas for new features, feel free to email me!
 
-1. Just clone the repo into some folder.
-2. Open Google Chrome, or your browser of choice with Chromium.
-3. Go to [Extension Manager](chrome://extensions/). ("chrome://extensions/")
-4. Enable *"Developer Mode"* using the switch on top right corner.
-5. Click on **"Load Unpacked"** button, on top left corner.
-6. Select the root folder of the repo (step 1), which contains the *"manifest.json"* file.
+1. Fork the repo.
+2. Clone the forked repo into some folder.
+3. Open Google Chrome, or your browser of choice with Chromium.
+4. Go to [Extension Manager](chrome://extensions/). ("chrome://extensions/")
+5. Enable *"Developer Mode"* using the switch on top right corner.
+6. Click on **"Load Unpacked"** button, on top left corner.
+7. Select the root folder of the repo (step 1), which contains the *"manifest.json"* file.
 
 ## License And Disclaimer
 

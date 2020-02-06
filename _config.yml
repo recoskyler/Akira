@@ -2,3 +2,5 @@ theme: jekyll-theme-cayman
 title: Akira
 description: Akira is a Chrome extension for sorting -> viewing -> bookmarking/closing a bunch of tabs that are open on multiple windows.
 show_downloads: true
+github:
+  webstore_url: https://chrome.google.com/webstore/detail/akira/aibadljmbjbjogomfgkoaoaighnmdghp?hl=en&authuser=0
