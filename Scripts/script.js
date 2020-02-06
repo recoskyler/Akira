@@ -310,6 +310,7 @@ function recentlyClosedScreen() {
 
     if (document.getElementById("searchBox")) {
         document.getElementById("searchBox").style.display = "none";
+        document.getElementById("searchBox").value = "";
     }
 
     if (document.getElementById("footer")) {
@@ -403,6 +404,7 @@ function settingsScreen() {
 
     if (document.getElementById("searchBox")) {
         document.getElementById("searchBox").style.display = "none";
+        document.getElementById("searchBox").value = "";
     }
 
     if (document.getElementById("footer")) {
@@ -412,15 +414,21 @@ function settingsScreen() {
     /////
 
     myNode.innerHTML = `
-        <ul>
+        <ul id="settingsList">
             <li>
-                <label class="container">Search term in page URLs.
-                    <input type="checkbox" checked="unchecked">
+                <label class="container" id="includeUrlInSearch">Search term in page URLs.
+                    <input type="checkbox" id="includeUrlInSearchCB">
                     <span class="checkmark"></span>
                 </label>
             </li>
         </ul>
     `;
+
+    var checkBox = document.getElementById("includeUrlInSearchCB");
+    
+    if (checkBox) {
+        checkBox.checked = includeUrlInSearch;
+    }
 
     resetNavClassNames();
     document.getElementById("settingsScreen").className += " selectedNav";
@@ -947,6 +955,18 @@ function checkEmptyGroup() {
     checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
 }
 
+function toggleIncludeUrl() {
+    includeUrlInSearch = !includeUrlInSearch;
+
+    var checkBox = document.getElementById("includeUrlInSearchCB");
+    
+    if (checkBox) {
+        checkBox.checked = includeUrlInSearch;
+    }
+
+    chrome.storage.sync.set({includeUrl: includeUrlInSearch});
+}
+
 // EE FUNCTIONALITY MODULES
 
 function toBin(str, spaceSeparatedOctets) {
@@ -1173,7 +1193,7 @@ function checkIntersections() {
 
                 checkEEAchieved();
             } catch (error) {
-                console.log("FUGG");
+                console.log("FUGG"); // Who catches errors anyway?
             }
         }
     }
@@ -1252,8 +1272,8 @@ function checkIntersections() {
 
     // OTHER BUTTONS
 
-    var otherButtonIDs = ["git", "byWindow", "byPage", "sortAlpha", "bookmarkSelected", "closeSelected", "undoButton", "refresh"];
-    var otherButtonFNs = [openGit, toggleByWindow, toggleByPage, toggleByName, bookmarkSelectedTabs, closeSelectedTabs, undo, reloadAkira];
+    var otherButtonIDs = ["git", "byWindow", "byPage", "sortAlpha", "bookmarkSelected", "closeSelected", "undoButton", "refresh", "includeUrlInSearch"];
+    var otherButtonFNs = [openGit, toggleByWindow, toggleByPage, toggleByName, bookmarkSelectedTabs, closeSelectedTabs, undo, reloadAkira, toggleIncludeUrl];
 
     for (i = 0; i < otherButtonIDs.length; i++) {
         if (!document.getElementById(otherButtonIDs[i])) {
@@ -1353,6 +1373,19 @@ window.onload = function() {
     chrome.storage.sync.get(['key'], function(result) {
         if (result.key) {
             recentlyClosed = JSON.parse(result.key);
+        }
+    });
+
+    chrome.storage.sync.get(['includeUrl'], function(result) {
+        if (result.includeUrl) {
+            console.log(result);
+            includeUrlInSearch = result.includeUrl;
+
+            var checkBox = document.getElementById("includeUrlInSearchCB");
+    
+            if (checkBox) {
+                checkBox.checked = includeUrlInSearch;
+            }
         }
     });
 

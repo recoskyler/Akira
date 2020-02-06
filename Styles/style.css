@@ -624,6 +624,10 @@ h1 {
     background-color: #7986CB;
 }
 
+#settingsList {
+    list-style: none;
+}
+
 #refresh {
     background-color: #7986CB;
     cursor: pointer;
