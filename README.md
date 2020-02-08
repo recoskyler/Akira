@@ -1,6 +1,6 @@
 # Akira
 
-[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/aibadljmbjbjogomfgkoaoaighnmdghp?label=Chrome%20Web%20Store)](https://chrome.google.com/webstore/detail/akira/aibadljmbjbjogomfgkoaoaighnmdghp?hl=en&authuser=0)
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/aibadljmbjbjogomfgkoaoaighnmdghp?label=Chrome%20Web%20Store)](https://chrome.google.com/webstore/detail/akira/aibadljmbjbjogomfgkoaoaighnmdghp)
 
 Akira is a Google Chrome extension for sorting -> viewing -> bookmarking/closing a bunch of tabs open on multiple windows. If you are the type who does not close any Chrome tabs, and opens a new window instead, you can use Akira to view all open tabs, group them by window/site, sort them alphabetically, then close the unnecessary, and bookmark the necessary ones.
 
@@ -16,7 +16,7 @@ Currently **UNLISTED** in Chrome Web Store, It will stay like this for a while, 
 
 Currently **UNLISTED**.
 
-1. Go to the [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/aibadljmbjbjogomfgkoaoaighnmdghp?label=Chrome%20Web%20Store)](https://chrome.google.com/webstore/detail/akira/aibadljmbjbjogomfgkoaoaighnmdghp?hl=en&authuser=0) of the extension.
+1. Go to the [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/aibadljmbjbjogomfgkoaoaighnmdghp?label=Chrome%20Web%20Store)](https://chrome.google.com/webstore/detail/akira/aibadljmbjbjogomfgkoaoaighnmdghp) of the extension.
 2. Click on **"Add to Chrome"** button.
 3. On the popup, click on **"Add Extension"** button.
 4. Done!
