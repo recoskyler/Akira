@@ -1312,6 +1312,35 @@ function checkIntersections() {
         }
     }
 
+    
+    // OTHER BUTTONS
+    
+    var otherButtonIDs = ["git", "byWindow", "byPage", "sortAlpha", "bookmarkSelected", "closeSelected", "undoButton", "refresh", "includeUrlInSearch", "addManuallyClosed"];
+    var otherButtonFNs = [openGit, toggleByWindow, toggleByPage, toggleByName, bookmarkSelectedTabs, closeSelectedTabs, undo, reloadAkira, toggleIncludeUrl, toggleManuallyClosed];
+    
+    for (i = 0; i < otherButtonIDs.length; i++) {
+        if (!document.getElementById(otherButtonIDs[i])) {
+            continue;
+        }
+        
+        var item = document.getElementById(otherButtonIDs[i]);
+        var rect1 = item.getBoundingClientRect();
+        var rect2 = div.getBoundingClientRect();
+        var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
+        
+        if (overlap && !mouseHold && !shiftDown && !ctrlDown) {
+            otherButtonFNs[i]();
+        }
+    }
+    
+    // TABS SELECT/CLICK
+    
+    if (screen === 1) return;
+    
+    if ((mousePress && !mouseHold && !ctrlDown) || (mouseHold && !ctrlDown)) {
+        deselectAllTabItems();
+    }
+    
     // WINDOW/PAGE GROUP SELECT
 
     var groups = document.getElementsByClassName("groupTitle");
@@ -1323,10 +1352,6 @@ function checkIntersections() {
         var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 
         if (overlap && !mouseHold && mousePress && !shiftDown) {
-            if ((mousePress && !mouseHold && !ctrlDown) || (mouseHold && !ctrlDown)) {
-                deselectAllTabItems();
-            }
-
             var tabItems = document.getElementsByClassName("tabItem");
             tabItems = Array.from(tabItems);
 
@@ -1353,33 +1378,7 @@ function checkIntersections() {
         }
     }
 
-    // OTHER BUTTONS
-
-    var otherButtonIDs = ["git", "byWindow", "byPage", "sortAlpha", "bookmarkSelected", "closeSelected", "undoButton", "refresh", "includeUrlInSearch", "addManuallyClosed"];
-    var otherButtonFNs = [openGit, toggleByWindow, toggleByPage, toggleByName, bookmarkSelectedTabs, closeSelectedTabs, undo, reloadAkira, toggleIncludeUrl, toggleManuallyClosed];
-
-    for (i = 0; i < otherButtonIDs.length; i++) {
-        if (!document.getElementById(otherButtonIDs[i])) {
-            continue;
-        }
-
-        var item = document.getElementById(otherButtonIDs[i]);
-        var rect1 = item.getBoundingClientRect();
-        var rect2 = div.getBoundingClientRect();
-        var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
-
-        if (overlap && !mouseHold && !shiftDown && !ctrlDown) {
-            otherButtonFNs[i]();
-        }
-    }
-
-    // TABS SELECT/CLICK
-
-    if (screen === 1) return;
-
-    if ((mousePress && !mouseHold && !ctrlDown) || (mouseHold && !ctrlDown)) {
-        deselectAllTabItems();
-    }
+    // SINGLE/MULTI ITEM SELECT
 
     var tabItems = document.getElementsByClassName("tabItem");
     tabItems = Array.from(tabItems);

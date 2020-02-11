@@ -34,7 +34,7 @@ html {
     color: #EFEFEF;
     max-width: 100vw;
     max-height: 100vh;
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: auto;
     -webkit-user-drag: none;
 }
