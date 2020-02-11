@@ -54,6 +54,7 @@ nav {
     top: 0px;
     background-color: #292A2D;
     width: 100%;
+    height: 55px;
     margin: 0;
     padding: 0;
     border-bottom: 1px solid #3F4042;
@@ -71,20 +72,21 @@ nav {
 .navButton {
     display: inline-block;
     margin: 0;
-    padding: 10px;
+    height: 100%;
     background-color: transparent;
     border: none;
     font-family: 'Montserrat', sans-serif;
     font-size: medium;
     color: #EFEFEF;
-    transition: border-bottom 0.1s;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.1s;
     transition-timing-function: ease-in-out;
     outline: none;
     cursor: pointer;
 }
 
 .navButton:hover {
-    border-bottom: 2px solid #EFEFEF;
+    border-color: #EFEFEF;
 }
 
 .leftMost {
@@ -248,12 +250,13 @@ nav {
     transition: 0.1s background-color, 0.1s border-color;
     transition-timing-function: ease-in-out;
     border: 1.5px solid transparent;
-    border-radius: 3px;
+    border-radius: 4px;
 }
 
 table {
     border: none;
     width: 100%;
+    height: 55px;
     margin: 0;
     padding: 0;
     border-image-width: 0;
@@ -364,7 +367,7 @@ br {
     border: 1.5px solid rgba(3, 169, 244, 0.5);
     position: absolute;
     background-color: rgba(3, 169, 244, 0.3);
-    border-radius: 3px;
+    border-radius: 4px;
 }
 
 h1 {
@@ -551,6 +554,7 @@ h1 {
     letter-spacing: 1.2px;
     user-select: none;
     -webkit-user-drag: none;
+    cursor: pointer;
 }
 
 .pageCont {

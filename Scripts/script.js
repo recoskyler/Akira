@@ -192,8 +192,8 @@ function openTabsScreen() {
                 wCont.className = "groupCont windowCont";
                 wList.className = "tabList";
                 wTitle.className = "groupTitle";
-                wList.id = "w" + wid;
-                wTitle.id = "wt" + wid;
+                wList.id = "w|" + wid;
+                wTitle.id = "wt|" + wid;
                 wTitle.innerHTML = `Window  ${wCount}`;
 
                 wCont.appendChild(wTitle);
@@ -211,6 +211,7 @@ function openTabsScreen() {
                 pCont.className = "groupCont pageCont";
                 pList.className = "tabList";
                 pTitle.className = "groupTitle";
+                pTitle.id = "pt|" + purl;
                 pList.id = "p|" + purl;
                 pTitle.innerHTML = purl.split("|")[1];
 
@@ -227,7 +228,7 @@ function openTabsScreen() {
 
                 wCont.className = "groupCont windowCont";
                 wTitle.className = "groupTitle";
-                wTitle.id = "wt" + wid;
+                wTitle.id = "wt|" + wid;
                 wTitle.innerHTML = `Window  ${wCount}`;
 
                 wCont.appendChild(wTitle);
@@ -241,6 +242,7 @@ function openTabsScreen() {
                         pCont.className = "groupCont pageCont";
                         pList.className = "tabList";
                         pTitle.className = "groupTitle";
+                        pTitle.id = "pt|" + purl;
                         pList.id = "p|" + purl;
                         pTitle.innerHTML = purl.split("|")[1];
         
@@ -323,7 +325,7 @@ function recentlyClosedScreen() {
         for (i = recentlyClosed.length - 1; i >= 0; i--) {
             var tab = recentlyClosed[i];
 
-            if (!tab.url.includes("chrome-extension://") && !tab.url.includes("chrome://")) {
+            if (!tab.url.includes("chrome-extension://") && !tab.url.includes("chrome://") && !tabs.includes(tab)) {
                 var tabUrl = getPageDomain(tab.url);
                 tabs.push(tab);
 
@@ -362,6 +364,7 @@ function recentlyClosedScreen() {
             pCont.className = "groupCont pageCont";
             pList.className = "tabList";
             pTitle.className = "groupTitle";
+            pTitle.id = "pt|" + purl;
             pList.id = "p|" + purl;
             pTitle.innerHTML = purl;
 
@@ -557,7 +560,10 @@ function closeSelectedTabs() {
     var count = 0;
 
     selectedTabs.forEach((tab) => {
-        recentlyClosed.push({title: tab.title, url: tab.url, favIconUrl: tab.favIconUrl});
+        if (!recentlyClosed.includes({title: tab.title, url: tab.url, favIconUrl: tab.favIconUrl})) {
+            recentlyClosed.push({title: tab.title, url: tab.url, favIconUrl: tab.favIconUrl});
+        }
+       
         recentActions.push(tab.url);
         count++;
 
@@ -585,7 +591,7 @@ function bookmarkSelectedTabs() {
 // DYNAMIC LIST
 
 function addTabToRecent(tab) {
-    if (screen !== 1) return;
+    if (screen !== 1 || !tab || tab.url === "") return;
 
     var listItem = document.createElement("li");
     var favIcon = tab.favIconUrl;
@@ -627,7 +633,10 @@ function addTabToRecent(tab) {
 }
 
 function addTabToList(tab) {
-    if (screen > 0) return;
+    if (screen >= 1 && !allTabs.includes(tab)) {
+        allTabs.push(tab);
+        return;
+    }
 
     if (document.getElementById("l" + tab.id)) {
         if (!allTabs.includes(tab)) {
@@ -683,20 +692,20 @@ function addTabToList(tab) {
                     `;
 
                     var pageList = document.getElementById("p|" + tab.windowId + "|" + getPageDomain(tab.url));
-                    var windowList = document.getElementById("w" + tab.windowId);
+                    var windowList = document.getElementById("w|" + tab.windowId);
                     var allTabsList = document.getElementById("allTabsList");
 
                     if (pageList) {
                         pageList.appendChild(listItem);
                         
-                        if (document.getElementById("wt" + tab.windowId)) {
-                            document.getElementById("wt" + tab.windowId).style.backgroundColor = wColor;
+                        if (document.getElementById("wt|" + tab.windowId)) {
+                            document.getElementById("wt|" + tab.windowId).style.backgroundColor = wColor;
                         }
 
                         allTabs.push(tab);
                     } else if (windowList) {
                         windowList.appendChild(listItem);
-                        document.getElementById("wt" + tab.windowId).style.backgroundColor = wColor;
+                        document.getElementById("wt|" + tab.windowId).style.backgroundColor = wColor;
                         allTabs.push(tab);
                     } else if (allTabsList) {
                         allTabsList.appendChild(listItem);
@@ -711,13 +720,16 @@ function addTabToList(tab) {
 }
 
 function updateTab(tab) {
-    if (screen > 0) return;
-
     if (tab.status === "loading") {
         return;
     }
 
     if (tab.url.includes("chrome-extension://") || tab.url.includes("chrome://")) {
+        return;
+    }
+
+    if (screen >= 1 && !allTabs.includes(tab)) {
+        allTabs.push(tab);
         return;
     }
 
@@ -731,7 +743,7 @@ function updateTab(tab) {
         return;
     }
 
-    chrome.windows.getAll({populate:true}, function(windows) { // TODO Fix newly added tabs not sorting
+    chrome.windows.getAll({populate:true}, function(windows) {
         for (i = 0; i < windows.length; i++) {
             var window = windows[i];
 
@@ -1274,7 +1286,10 @@ function checkIntersections() {
 
                     recentActions = [];
 
-                    recentlyClosed.push({title: title, url: url, favIconUrl: favIcon});
+                    if (!recentlyClosed.includes({title: title, url: url, favIconUrl: favIcon})) {
+                        recentlyClosed.push({title: title, url: url, favIconUrl: favIcon});
+                    }
+
                     recentActions.push(url);
 
                     if (recentlyClosed.length > 300) {
@@ -1294,6 +1309,47 @@ function checkIntersections() {
                 default:
                     break;
             }
+        }
+    }
+
+    // WINDOW/PAGE GROUP SELECT
+
+    var groups = document.getElementsByClassName("groupTitle");
+
+    for (i = 0; i < groups.length; i++) {
+        var groupTitle = groups[i];
+        var rect1 = groupTitle.getBoundingClientRect();
+        var rect2 = div.getBoundingClientRect();
+        var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
+
+        if (overlap && !mouseHold && mousePress && !shiftDown) {
+            if ((mousePress && !mouseHold && !ctrlDown) || (mouseHold && !ctrlDown)) {
+                deselectAllTabItems();
+            }
+
+            var tabItems = document.getElementsByClassName("tabItem");
+            tabItems = Array.from(tabItems);
+
+            for (i = 0; i < tabItems.length; i++) {
+                var tabItem = tabItems[i];
+                var parentNode = tabItem.parentElement;
+                var tab = allTabs[allTabs.map(e => e.id).indexOf(parseInt(tabItem.id.substr(1)))];
+
+                if (groupTitle.id.split("|")[0] === "pt" && parentNode.id.split("|")[2] === groupTitle.id.split("|")[2]) {
+                    tabItem.classList.toggle("selected");
+                } else if (groupTitle.id.split("|")[0] === "wt" && parentNode.id.split("|")[1] === groupTitle.id.split("|")[1]) {
+                    tabItem.classList.toggle("selected");
+                }
+
+                if (tabItem.classList.contains("selected") && !selectedTabs.includes(tab)) {
+                    selectedTabs.push(tab);
+                } else if (selectedTabs.includes(tab) && !tabItem.classList.contains("selected")) {
+                    selectedTabs.splice(selectedTabs.indexOf(tab), 1);
+                }
+            }
+
+            checkForSelected();
+            return;
         }
     }
 
@@ -1474,17 +1530,17 @@ window.onload = function() {
         }, this.threshold);
 
         this.mousePress = true;
-        this.div.hidden = 0; //Unhide the div
-        this.x1 = event.pageX; //Set the initial X
-        this.y1 = event.pageY; //Set the initial Y
+        this.div.hidden = 0;
+        this.x1 = event.pageX;
+        this.y1 = event.pageY;
         this.reCalc();
         this.checkIntersections();
     });
 
     // MOUSE MOVE
     this.document.addEventListener("mousemove", (event) => {
-        this.x2 = event.pageX; //Update the current position X
-        this.y2 = event.pageY; //Update the current position Y
+        this.x2 = event.pageX;
+        this.y2 = event.pageY;
 
         if (this.mousePress) {
             this.reCalc();
@@ -1500,7 +1556,7 @@ window.onload = function() {
         clearTimeout(timer);
         this.mouseHold = false;
         this.mousePress = false;
-        this.div.hidden = 1; //Hide the div
+        this.div.hidden = 1;
         this.reCalc();
     });
 
@@ -1527,11 +1583,14 @@ window.onload = function() {
     chrome.tabs.onRemoved.addListener((tid) => {
         var elem = document.getElementById("l" + tid);
 
+        this.console.log("1");
+
         if (this.addManuallyClosed && this.allTabs.map(e => e.id).indexOf(tid) >= 0) {
+            this.console.log("2");
             var tabElem = this.allTabs[this.allTabs.map(e => e.id).indexOf(tid)];
             var reTab = {title: tabElem.title, url: tabElem.url, favIconUrl: tabElem.favIconUrl};
 
-            if (!this.recentActions.includes(reTab)){
+            if (!this.recentlyClosed.includes(reTab)){
                 recentlyClosed.push(reTab);
 
                 if (recentlyClosed.length > 100) {
@@ -1539,6 +1598,8 @@ window.onload = function() {
                 }
             
                 chrome.storage.sync.set({key: JSON.stringify(recentlyClosed)});
+
+                if (screen === 1) this.recentlyClosedScreen();
             }
         }
 
