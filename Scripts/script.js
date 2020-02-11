@@ -58,6 +58,7 @@ var lastSelectedItemID = -1;
 var div, searchBox, x1 = 0, y1 = 0, x2 = 0, y2 = 0;
 const threshold = 185;
 var timer = setTimeout(() => {}, 1);
+var eggTimer = setTimeout(() => {}, 1);
 var selectedTabs = [];
 var allTabs = [];
 const windowColors = ["#3F51B5", "#F44336", "#4CAF12", "#03A9F4", "#FFC107"];
@@ -1088,7 +1089,14 @@ function tafuwu(code) {
 function ily(code) {
     if (!eestc.includes(code)) return;
 
-    var main = document.getElementById("main");
+    var hrts = document.getElementsByClassName("LOVE_YOU_uwu");
+
+    while (hrts.length > 0) {
+        hrts = document.getElementsByClassName("LOVE_YOU_uwu");
+        hrts[0].parentNode.removeChild(hrts[0]);
+    }
+
+    console.log(hrts.length);
 
     for (i = 0; i < 200; i++) {
         var rnd = Math.floor(Math.random() * 10);
@@ -1100,6 +1108,7 @@ function ily(code) {
         hrt.style.width = `${rnd}px`;
         hrt.style.position = "absolute";
         hrt.id = `${i}`;
+        hrt.className = "LOVE_YOU_uwu";
 
         rnd = Math.floor(Math.random() * 100) - 50;
 
@@ -1114,8 +1123,8 @@ function ily(code) {
         var image_Height = image_Element.height;
         var image_Width = image_Element.width;
         
-        var availSpace_V = window_Height - image_Height;
-        var availSpace_H = window_Width - image_Width;
+        var availSpace_V = window_Height - image_Height - 50;
+        var availSpace_H = window_Width - image_Width - 50;
         
         var randNum_V = Math.round(Math.random() * availSpace_V);
         var randNum_H = Math.round(Math.random() * availSpace_H);
@@ -1123,6 +1132,8 @@ function ily(code) {
         image_Element.style.top = randNum_V + "px";
         image_Element.style.left = randNum_H + "px";
     }
+
+    eggTimer = setTimeout(() => {ily("01101001001111000011001101110101")}, 400);
 }
 
 function axisPray(code) {
@@ -1582,10 +1593,7 @@ window.onload = function() {
     chrome.tabs.onRemoved.addListener((tid) => {
         var elem = document.getElementById("l" + tid);
 
-        this.console.log("1");
-
         if (this.addManuallyClosed && this.allTabs.map(e => e.id).indexOf(tid) >= 0) {
-            this.console.log("2");
             var tabElem = this.allTabs[this.allTabs.map(e => e.id).indexOf(tid)];
             var reTab = {title: tabElem.title, url: tabElem.url, favIconUrl: tabElem.favIconUrl};
 
