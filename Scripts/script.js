@@ -124,15 +124,9 @@ function openTabsScreen() {
 
     checkEmptyGroup();
 
-    var myNode = document.getElementById("main");
+    clearElementByID("main");
 
-    while (myNode.firstChild) {
-        myNode.removeChild(myNode.firstChild);
-    }
-
-    if (document.getElementById("byWindow")) {
-        document.getElementById("byWindow").style.display = "inline-block";
-    }
+    showElementByID("byWindow", "inline-block");
 
     /////
 
@@ -300,25 +294,16 @@ function recentlyClosedScreen() {
 
     checkEmptyGroup();
 
-    var myNode = document.getElementById("main");
     var pages = [];
     var tabs = [];
 
-    while (myNode.firstChild) {
-        myNode.removeChild(myNode.firstChild);
-    }
-
-    if (document.getElementById("byWindow")) {
-        document.getElementById("byWindow").style.display = "none";
-    }
+    clearElementByID("main");
+    hideElementByID("byWindow");
+    hideElementByID("footer");
 
     if (document.getElementById("searchBox")) {
-        document.getElementById("searchBox").style.display = "none";
+        hideElementByID("searchBox");
         document.getElementById("searchBox").value = "";
-    }
-
-    if (document.getElementById("footer")) {
-        document.getElementById("footer").style.display = "none";
     }
 
     /////
@@ -398,23 +383,13 @@ function settingsScreen() {
 
     checkEmptyGroup();
 
-    var myNode = document.getElementById("main");
-
-    while (myNode.firstChild) {
-        myNode.removeChild(myNode.firstChild);
-    }
-
-    if (document.getElementById("byWindow")) {
-        document.getElementById("byWindow").style.display = "none";
-    }
+    clearElementByID("main");
+    hideElementByID("byWindow");
+    hideElementByID("footer");
 
     if (document.getElementById("searchBox")) {
-        document.getElementById("searchBox").style.display = "none";
+        hideElementByID("searchBox");
         document.getElementById("searchBox").value = "";
-    }
-
-    if (document.getElementById("footer")) {
-        document.getElementById("footer").style.display = "none";
     }
 
     /////
@@ -825,23 +800,18 @@ function searchTabs() {
 // OTHER
 
 function showUndo(text) {
-    var undoCont = document.getElementById("undoCont");
     var undoText = document.getElementById("undoText");
 
     if (undoCont && undoText) {
         undoText.innerHTML = text;
-        undoCont.style.display = "block";
+        showElementByID("undoCont");
 
         setTimeout(hideUndo, 4000);
     }
 }
 
 function hideUndo() {
-    var undoCont = document.getElementById("undoCont");
-
-    if (undoCont) {
-        undoCont.style.display = "none";
-    }
+    hideElementByID("undoCont");
 }
 
 function undo() {
@@ -902,15 +872,15 @@ function checkEmptyMain(blankPage) {
     }
     
     if (allTabs.length === 0 || screen > 1 || Array.from(document.getElementsByClassName("tabItem")).length === 0) {
-        document.getElementById("optionsCont").style.display = "none";
+        hideElementByID("optionsCont");
     } else if (document.getElementsByClassName("vis").length > 0) {
-        document.getElementById("optionsCont").style.display = "flex";
+        showElementByID("optionsCont", "flex");
     }
 
     if (screen === 0 && Array.from(document.getElementsByClassName("tabItem")).length > 0 && allTabs.length > 0) {
-        document.getElementById("searchBox").style.display = "block";
+        showElementByID("searchBox", "block");
     } else {
-        document.getElementById("searchBox").style.display = "none";
+        hideElementByID("searchBox");
     }
 }
 
@@ -939,9 +909,9 @@ function openGit() {
 
 function checkForSelected() {
     if (selectedTabs.length >= 1) {
-        document.getElementById("footer").style.display = "block";
+        showElementByID("footer");
     } else {
-        document.getElementById("footer").style.display = "none";
+        hideElementByID("footer");
     }
 
     document.getElementById("selectedCount").innerHTML = `${selectedTabs.length} Selected`;
@@ -1005,6 +975,62 @@ function toggleManuallyClosed() {
     }
 
     chrome.storage.sync.set({addManuallyClosed: addManuallyClosed});
+}
+
+// OPTIMIZATION
+
+function hideElementByID(id) {
+    var elem = document.getElementById(id);
+
+    if (elem) {
+        elem.style.display = "none";
+    }
+}
+
+function showElementByID(id, disp = "block") {
+    var elem = document.getElementById(id);
+
+    if (elem) {
+        elem.style.display = disp;
+    }
+}
+
+function hideElementsByClass(cls) {
+    var elems = document.getElementsByClassName(cls);
+
+    if (!elems) return;
+
+    for (i = 0; i < elems.length; i++) {
+        var elem = elems[i];
+
+        if (elem) {
+            elem.style.display = "none";
+        }
+    }
+}
+
+function showElementsByClass(cls, disp = "block") {
+    var elems = document.getElementsByClassName(cls);
+
+    if (!elems) return;
+
+    for (i = 0; i < elems.length; i++) {
+        var elem = elems[i];
+
+        if (elem) {
+            elem.style.display = disp;
+        }
+    }
+}
+
+function clearElementByID(id) {
+    var myNode = document.getElementById(id);
+
+    if (!myNode) return;
+
+    while (myNode.firstChild) {
+        myNode.removeChild(myNode.firstChild);
+    }
 }
 
 // EE FUNCTIONALITY MODULES
@@ -1261,7 +1287,7 @@ function checkIntersections() {
 
         if (overlap && !mouseHold && mousePress && !ctrlDown && !shiftDown) {
             screen = i;
-            document.getElementById("main").innerHTML = "";
+            clearElementByID("main");
             selectedTabs = [];
             allTabs = [];
             fus[i]();
