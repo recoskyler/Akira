@@ -36,7 +36,7 @@ html {
 body {
     margin: 0;
     padding: 0;
-    background-color: #212121;
+    background-color: #202124;
     width: 300px;
     height: 200px;
 }
@@ -52,8 +52,8 @@ body {
     cursor: default;
     letter-spacing: 5px;
     font-size: large;
-    background-color: #212121;
-    border-bottom: 1px solid #555555;
+    background-color: #292A2D;
+    border-bottom: 1px solid #3F4042;
     user-select: none;
 }
 

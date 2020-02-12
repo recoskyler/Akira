@@ -125,8 +125,11 @@ function openTabsScreen() {
     checkEmptyGroup();
 
     clearElementByID("main");
-
     showElementByID("byWindow", "inline-block");
+
+    var myNode = document.getElementById("main");
+
+    if (!myNode) return;
 
     /////
 
@@ -1403,6 +1406,12 @@ function checkIntersections() {
                     tabItem.classList.toggle("selected");
                 }
 
+                if (tabItem.classList.contains("selected")) {
+                    tabItem.style.backgroundColor = item.style.borderLeftColor;
+                } else {
+                    tabItem.style.backgroundColor = "";
+                }
+
                 if (tabItem.classList.contains("selected") && !selectedTabs.includes(tab)) {
                     selectedTabs.push(tab);
                 } else if (selectedTabs.includes(tab) && !tabItem.classList.contains("selected")) {
@@ -1444,6 +1453,12 @@ function checkIntersections() {
                             }
         
                             sei.classList.toggle("selected");
+
+                            if (sei.classList.contains("selected")) {
+                                sei.style.backgroundColor = sei.style.borderLeftColor;
+                            } else {
+                                sei.style.backgroundColor = "";
+                            }
                         }
                     }
                 } else if (lastSelectedItemID < tabItems.indexOf(item)) {
@@ -1454,8 +1469,14 @@ function checkIntersections() {
                             if (k === lastSelectedItemID) {
                                 continue;
                             }
-        
+
                             sei.classList.toggle("selected");
+
+                            if (sei.classList.contains("selected")) {
+                                sei.style.backgroundColor = sei.style.borderLeftColor;
+                            } else {
+                                sei.style.backgroundColor = "";
+                            }
                         }
                     }
                 }
@@ -1470,6 +1491,12 @@ function checkIntersections() {
         }
 
         var tab = allTabs[allTabs.map(e => e.id).indexOf(parseInt(item.id.substr(1)))];
+
+        if (item.classList.contains("selected")) {
+            item.style.backgroundColor = item.style.borderLeftColor;
+        } else {
+            item.style.backgroundColor = "";
+        }
 
         if (item.classList.contains("selected") && !selectedTabs.includes(tab)) {
             selectedTabs.push(tab);
