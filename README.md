@@ -45,7 +45,15 @@ By Recoskyler - Adil Atalay Hamamcıoğlu
 
 I am not responsible for any inconvenience. By adding Akira to Google Chrome, you take all responsibility.
 
-MIT License
+### Privacy Policy
+
+[Privacy-Policy.md](../Akira/privacy-policy.md)
+
+## Terms Of Service
+
+[Terms-Of-Service.md](../Akira/terms-of-service.md)
+
+### MIT License
 
 Copyright (c) 2020 Adil Atalay Hamamcıoğlu
 
