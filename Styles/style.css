@@ -258,6 +258,7 @@ nav {
     transition-timing-function: ease-in-out;
     border: 1.5px solid transparent;
     border-radius: 4px;
+    user-select: none;
 }
 
 table {
@@ -652,6 +653,17 @@ h1 {
 
 #refresh:hover {
     background-color: #5C6BC0;
+}
+
+#clear {
+    background-color: #8BC34A;
+    cursor: pointer;
+    transition: 0.2s background-color;
+    transition-timing-function: ease-in-out;
+}
+
+#clear:hover {
+    background-color: #689F38;
 }
 
 .mono {

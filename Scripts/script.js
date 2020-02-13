@@ -127,6 +127,7 @@ function openTabsScreen() {
 
     clearElementByID("main");
     showElementByID("byWindow", "inline-block");
+    hideElementByID("clear");
 
     var myNode = document.getElementById("main");
 
@@ -305,6 +306,7 @@ function recentlyClosedScreen() {
     clearElementByID("main");
     hideElementByID("byWindow");
     hideElementByID("footer");
+    showElementByID("clear", "inline-block");
 
     if (!myNode) return;
 
@@ -395,6 +397,7 @@ function settingsScreen() {
     clearElementByID("main");
     hideElementByID("byWindow");
     hideElementByID("footer");
+    hideElementByID("clear");
 
     if (!myNode) return;
 
@@ -514,12 +517,20 @@ function deselectAllTabItems() {
     var se = document.getElementsByClassName("tabItem");
 
     for (i = 0; i < se.length; i++) {
-        if (se[i].classList.contains("selected")) {
-            se[i].classList.remove("selected");
+        var tab = se[i];
+
+        if (tab.classList.contains("selected")) {
+            tab.classList.remove("selected");
         }
 
-        if (selectedTabs.map(e => e.id).indexOf(parseInt(se[i].id.substr(1))) >= 0) {
-            selectedTabs.splice(selectedTabs.map(e => e.id).indexOf(parseInt(se[i].id.substr(1))), 1);
+        if (tab.classList.contains("selected")) {
+            tab.style.backgroundColor = tab.style.borderLeftColor;
+        } else {
+            tab.style.backgroundColor = "";
+        }
+
+        if (selectedTabs.map(e => e.id).indexOf(parseInt(tab.id.substr(1))) >= 0) {
+            selectedTabs.splice(selectedTabs.map(e => e.id).indexOf(parseInt(tab.id.substr(1))), 1);
         }
     }
 }
@@ -528,12 +539,20 @@ function selectAllTabItems() {
     var se = document.getElementsByClassName("tabItem");
 
     for (i = 0; i < se.length; i++) {
-        if (!se[i].classList.contains("selected")) {
-            se[i].classList.add("selected");
+        var tab = se[i];
+
+        if (!tab.classList.contains("selected")) {
+            tab.classList.add("selected");
         }
 
-        if (!selectedTabs.includes(allTabs[allTabs.map(e => e.id).indexOf(parseInt(se[i].id.substr(1)))])) {
-            selectedTabs.push(allTabs[allTabs.map(e => e.id).indexOf(parseInt(se[i].id.substr(1)))]);
+        if (tab.classList.contains("selected")) {
+            tab.style.backgroundColor = tab.style.borderLeftColor;
+        } else {
+            tab.style.backgroundColor = "";
+        }
+
+        if (!selectedTabs.includes(allTabs[allTabs.map(e => e.id).indexOf(parseInt(tab.id.substr(1)))])) {
+            selectedTabs.push(allTabs[allTabs.map(e => e.id).indexOf(parseInt(tab.id.substr(1)))]);
         }
     }
 
@@ -806,9 +825,43 @@ function searchTabs() {
 
         checkEmptyMain(`<h2 id="emptyPage">NO TAB RESULTS FOR "${searchBox.value}"</h2>`);
     }
+
+    tabLists = document.getElementsByClassName("tabList");
+
+    if (tabLists && tabLists.length > 0) {
+        for (i = 0; i < tabLists.length; i++) {
+            var tabList = tabLists[i];
+            var count = 0;
+
+            if (!tabList.parentNode.classList.contains("groupCont")) continue;
+
+            for (k = 0; k < tabList.childElementCount; k++) {
+                var tab = tabList.childNodes[k];
+
+                if (tab.classList.contains("vis")) count++;
+            }
+
+            if (count === 0) {
+                tabList.parentNode.style.display = "none";
+            } else {
+                tabList.parentNode.style.display = "block";
+            }
+        }
+    }
 }
 
 // OTHER
+
+function clearRecents() {
+    if (screen !== 1) return;
+
+    recentActions = [];
+    recentlyClosed = [];
+
+    chrome.storage.sync.set({key: JSON.stringify(recentlyClosed)}, () => {
+        recentlyClosedScreen();
+    });
+}
 
 function closeWindows() {
     chrome.windows.getAll({populate:true}, function(windows) {
@@ -1397,8 +1450,8 @@ function checkIntersections() {
     
     // OTHER BUTTONS
     
-    var otherButtonIDs = ["git", "byWindow", "byPage", "sortAlpha", "bookmarkSelected", "closeSelected", "undoButton", "refresh", "includeUrlInSearch", "addManuallyClosed"];
-    var otherButtonFNs = [openGit, toggleByWindow, toggleByPage, toggleByName, bookmarkSelectedTabs, closeSelectedTabs, undo, reloadAkira, toggleIncludeUrl, toggleManuallyClosed];
+    var otherButtonIDs = ["git", "byWindow", "byPage", "sortAlpha", "bookmarkSelected", "closeSelected", "undoButton", "refresh", "includeUrlInSearch", "addManuallyClosed", "clear"];
+    var otherButtonFNs = [openGit, toggleByWindow, toggleByPage, toggleByName, bookmarkSelectedTabs, closeSelectedTabs, undo, reloadAkira, toggleIncludeUrl, toggleManuallyClosed, clearRecents];
     
     for (i = 0; i < otherButtonIDs.length; i++) {
         if (!document.getElementById(otherButtonIDs[i])) {
