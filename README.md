@@ -47,11 +47,11 @@ I am not responsible for any inconvenience. By adding Akira to Google Chrome, yo
 
 ### Privacy Policy
 
-[Privacy-Policy.md](../Akira/privacy-policy.md)
+[Privacy-Policy.md](https://github.com/recoskyler/Akira/blob/master/privacy-policy.md)
 
 ## Terms Of Service
 
-[Terms-Of-Service.md](../Akira/terms-of-service.md)
+[Terms-Of-Service.md]([../Akira/terms-of-service.md](https://github.com/recoskyler/Akira/blob/master/terms-of-service.md))
 
 ### MIT License
 
