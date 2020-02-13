@@ -1138,7 +1138,7 @@ function tafuwu(code) {
     var gico = document.getElementById("git");
 
     if (logo && main && scrt && navb && body && nico) {
-        logo.src = "../images/fta_temp.jpg";
+        logo.src = "https://78.media.tumblr.com/ab4a5fb73a49f4bf86b4b528c414ca46/tumblr_panzisZ04c1wcwln9o1_640.gif";
         scrt.innerHTML = "TSUYU-CHAN <3";
         navb.style.borderColor = "#BAC351";
         navb.style.backgroundColor = "#369032";
