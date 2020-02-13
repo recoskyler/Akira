@@ -325,7 +325,7 @@ tbody {
     position: relative;
     width: 60%;
     min-width: 800px;
-    margin: 15px auto 0px auto;
+    margin: 15px auto 100px auto;
     padding: 3px 3px 3px 0px;
     -webkit-user-drag: none;
     border: 1px solid #333;
@@ -388,7 +388,7 @@ h1 {
 
 #footer {
     display: none;
-    position: sticky;
+    position: fixed;
     bottom: 0px;
     width: 100%;
     height: auto;
@@ -490,6 +490,10 @@ h1 {
     min-width: 800px;
     user-select: none;
     -webkit-user-drag: none;
+}
+
+#secret {
+    color: #ff0022b2;
 }
 
 .optionsBox {

@@ -69,6 +69,7 @@ var screen = 0;         // 0 - Open Tabs, 1 - Recently Closed, 2 -
 var recentActions = []; // c - closed, b - bookmarked, r - bookmark removed
 var recentlyClosed = [];
 var eekws = "";
+var secretActive = false;
 const threshold = 185;
 const windowColors = ["#3F51B5", "#F44336", "#4CAF12", "#03A9F4", "#FFC107"];
 const eestc = [
@@ -299,10 +300,13 @@ function recentlyClosedScreen() {
 
     var pages = [];
     var tabs = [];
+    var myNode = document.getElementById("main");
 
     clearElementByID("main");
     hideElementByID("byWindow");
     hideElementByID("footer");
+
+    if (!myNode) return;
 
     if (document.getElementById("searchBox")) {
         hideElementByID("searchBox");
@@ -386,9 +390,13 @@ function settingsScreen() {
 
     checkEmptyGroup();
 
+    var myNode = document.getElementById("main");
+
     clearElementByID("main");
     hideElementByID("byWindow");
     hideElementByID("footer");
+
+    if (!myNode) return;
 
     if (document.getElementById("searchBox")) {
         hideElementByID("searchBox");
@@ -802,6 +810,20 @@ function searchTabs() {
 
 // OTHER
 
+function closeWindows() {
+    chrome.windows.getAll({populate:true}, function(windows) {
+        windows.forEach(function(window) {
+            try {
+                if (window.tabs.length === 0 || window.tabs[0].url.includes("chrome://")) {
+                    chrome.windows.remove(window.id);
+                }
+            } catch (error) {
+                console.log("WINDOW NOT FOUND, or something... idk");
+            }
+        });
+    });
+}
+
 function showUndo(text) {
     var undoText = document.getElementById("undoText");
 
@@ -871,7 +893,7 @@ function checkEmptyMain(blankPage) {
         elem.innerHTML = blankPage;
         elem.id = "emptyCont";
 
-        mainElem.appendChild(elem);
+        if (screen <= 1) mainElem.appendChild(elem);
     }
     
     if (allTabs.length === 0 || screen > 1 || Array.from(document.getElementsByClassName("tabItem")).length === 0) {
@@ -1105,18 +1127,36 @@ function buildSpan(text) {
 function tafuwu(code) {
     if (!eestc.includes(code)) return;
 
+    secretActive = true;
+
     var logo = document.getElementById("logo");
     var main = document.getElementById("main");
     var scrt = document.getElementById("secret");
+    var navb = document.getElementById("nav");
+    var body = document.getElementById("body");
+    var nico = document.getElementById("nameIcon");
+    var gico = document.getElementById("git");
 
-    if (logo && main && scrt) {
+    if (logo && main && scrt && navb && body && nico) {
         logo.src = "../images/fta_temp.jpg";
         scrt.innerHTML = "TSUYU-CHAN <3";
+        navb.style.borderColor = "#BAC351";
+        navb.style.backgroundColor = "#369032";
+        navb.style.color = "#253122";
+        body.style.backgroundColor = "#223227";
+        scrt.style.color = "#BAC351";
+        nico.innerHTML = "TSUYU-CHAN ❤️";
+        main.style.borderColor = "#BAC351";
+        gico.src = "../images/kurbagaamk.png";
+        gico.style.width = "auto";
+        gico.style.height = "auto";
     }
 }
 
 function ily(code) {
     if (!eestc.includes(code)) return;
+
+    secretActive = true;
 
     var hrts = document.getElementsByClassName("LOVE_YOU_uwu");
 
@@ -1167,6 +1207,8 @@ function ily(code) {
 
 function axisPray(code) {
     if (!eestc.includes(code)) return;
+
+    secretActive = true;
 
     var logo = document.getElementById("logo");
     var main = document.getElementById("main");
@@ -1266,7 +1308,7 @@ function checkIntersections() {
                     eekws = eekws.substr(eekws.length - (8 * 17));
                 }
 
-                if (document.getElementById("secret")) {
+                if (document.getElementById("secret") && !secretActive) {
                     document.getElementById("secret").innerHTML = fromBin(eekws);
                 }
 
@@ -1407,7 +1449,7 @@ function checkIntersections() {
                 }
 
                 if (tabItem.classList.contains("selected")) {
-                    tabItem.style.backgroundColor = item.style.borderLeftColor;
+                    tabItem.style.backgroundColor = tabItem.style.borderLeftColor;
                 } else {
                     tabItem.style.backgroundColor = "";
                 }
@@ -1644,6 +1686,8 @@ window.onload = function() {
     });
 
     chrome.tabs.onRemoved.addListener((tid) => {
+        closeWindows();
+
         var elem = document.getElementById("l" + tid);
 
         if (this.addManuallyClosed && this.allTabs.map(e => e.id).indexOf(tid) >= 0) {
