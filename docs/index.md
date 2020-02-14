@@ -27,8 +27,40 @@ Currently **UNLISTED**.
 3. On the popup, click on **"Add Extension"** button.
 4. Done!
 
-## EULA, LICENSE, PRIVACY POLICY
+## License And Disclaimer
 
-By using Akira, you agree to the terms in EULA, license and the privacy policy.
+AKIRA
 
-EULA, license and the privacy policy can be found [here](lapp.recoskyler.com).
+By Recoskyler - Adil Atalay Hamamcıoğlu
+
+I am not responsible for any inconvenience. By adding Akira to Google Chrome, you take all responsibility.
+
+### Privacy Policy
+
+[Privacy-Policy.md](https://github.com/recoskyler/Akira/blob/master/privacy-policy.md)
+
+## Terms Of Service
+
+[Terms-Of-Service.md]([../Akira/terms-of-service.md](https://github.com/recoskyler/Akira/blob/master/terms-of-service.md))
+
+### MIT License
+
+Copyright (c) 2020 Adil Atalay Hamamcıoğlu
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
