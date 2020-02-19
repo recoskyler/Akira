@@ -304,16 +304,16 @@ function recentlyClosedScreen() {
     var myNode = document.getElementById("main");
 
     clearElementByID("main");
+    showElementByID("searchBox");
     hideElementByID("byWindow");
     hideElementByID("footer");
     showElementByID("clear", "inline-block");
 
     if (!myNode) return;
 
-    if (document.getElementById("searchBox")) {
-        hideElementByID("searchBox");
-        document.getElementById("searchBox").value = "";
-    }
+    searchBox.value = "";
+
+    searchTabs();
 
     /////
     if (recentlyClosed !== null && recentlyClosed !== undefined && recentlyClosed.length > 0) {
@@ -378,7 +378,7 @@ function recentlyClosedScreen() {
 
     for (i = 0; i < tabs.length; i++) {
         var tab = tabs[i];
-        addTabToRecent(tab);
+        addTabToRecent(tab, i);
     }
 
     checkEmptyMain(`<h2 id="emptyPage">NO RECENTLY CLOSED TABS</h2>`);
@@ -398,20 +398,18 @@ function settingsScreen() {
     hideElementByID("byWindow");
     hideElementByID("footer");
     hideElementByID("clear");
+    hideElementByID("searchBox");
 
     if (!myNode) return;
-
-    if (document.getElementById("searchBox")) {
-        hideElementByID("searchBox");
-        document.getElementById("searchBox").value = "";
-    }
+    
+    searchBox.value = "";
 
     /////
 
     myNode.innerHTML = `
         <ul id="settingsList">
             <li>
-                <label class="container" id="includeUrlInSearch">Search term in page URLs.
+                <label class="container" id="includeUrlInSearch">Include page URLs in search.
                     <input type="checkbox" id="includeUrlInSearchCB">
                     <span class="checkmark"></span>
                 </label>
@@ -456,6 +454,17 @@ function closeTab(tabID) {
         var elem = document.getElementById("l" + tabID);
 
         if (elem) {
+            const title = document.getElementById("t" + tabID).innerHTML;
+            const favIcon = document.getElementById("f" + tabID).src;
+            const url = elem.classList[2];
+            const recentTab = {title: title, url: url, favIconUrl: favIcon};
+
+            if (recentlyClosed.map(e => e.url).indexOf(url) < 0) {
+                recentlyClosed.push(recentTab);
+            }
+    
+            chrome.storage.sync.set({key: JSON.stringify(recentlyClosed)});
+
             elem.parentNode.removeChild(elem);
             checkEmptyGroup();
         }
@@ -565,24 +574,14 @@ function closeSelectedTabs() {
     recentActions = [];
     var count = 0;
 
-    selectedTabs.forEach((tab) => {
-        if (!recentlyClosed.includes({title: tab.title, url: tab.url, favIconUrl: tab.favIconUrl})) {
-            recentlyClosed.push({title: tab.title, url: tab.url, favIconUrl: tab.favIconUrl});
-        }
-       
+    selectedTabs.forEach((tab) => {       
         recentActions.push(tab.url);
         count++;
 
         closeTab(tab.id);
     });
 
-    if (recentlyClosed.length > 100) {
-        recentlyClosed = recentlyClosed.slice(recentlyClosed.length - 299, recentlyClosed.length - 1);
-    }
-
     showUndo("Closed " + count + " tabs.");
-
-    chrome.storage.sync.set({key: JSON.stringify(recentlyClosed)});
 
     selectedTabs = [];
     checkForSelected();
@@ -596,7 +595,7 @@ function bookmarkSelectedTabs() {
 
 // DYNAMIC LIST
 
-function addTabToRecent(tab) {
+function addTabToRecent(tab, id = 0) {
     if (screen !== 1 || !tab || tab.url === "") return;
 
     var listItem = document.createElement("li");
@@ -609,12 +608,13 @@ function addTabToRecent(tab) {
     listItem.classList.add("tabItem");
     listItem.classList.add("vis");
     listItem.classList.add(tab.url);
+    listItem.id = "l" + id;
     
     listItem.innerHTML = `
         <table class="tabItemTable">
             <tr>
                 <td><img class="favIcon" src=${favIcon} alt="ICO"></td>
-                <td><span class="tabTitle">${tab.title}</span></td>
+                <td><span class="tabTitle" id="t${id}">${tab.title}</span></td>
                 <td rowspan='2' class="miniActions">
                     <img id="o${tab.url}" class="miniAction" src="../images/open.png" alt="REOPEN TAB">
                 </td>
@@ -797,11 +797,11 @@ function updateTab(tab) {
 }
 
 function searchTabs() {
-    if (screen > 0) return;
+    if (screen > 1) return;
 
     var tabList = document.getElementsByClassName("tabItem");
 
-    if (tabList.length >= 1) {
+    if (tabList.length > 0) {
         for (i = 0; i < tabList.length; i++) {
             var tabItem = document.getElementsByClassName("tabItem")[i];
             var titleElem = document.getElementById("t" + tabItem.id.substr(1));
@@ -955,7 +955,7 @@ function checkEmptyMain(blankPage) {
         showElementByID("optionsCont", "flex");
     }
 
-    if (screen === 0 && Array.from(document.getElementsByClassName("tabItem")).length > 0 && allTabs.length > 0) {
+    if (screen <= 1 && Array.from(document.getElementsByClassName("tabItem")).length > 0 && allTabs.length > 0) {
         showElementByID("searchBox", "block");
     } else {
         hideElementByID("searchBox");
@@ -1288,7 +1288,7 @@ function toggleByWindow() {
         groupingMode = 2;
     }
 
-    document.getElementById("searchBox").value = "";
+    searchBox.value = "";
 
     openTabsScreen();
 }
@@ -1306,7 +1306,7 @@ function toggleByPage() {
         groupingMode = 1;
     }
 
-    document.getElementById("searchBox").value = "";
+    searchBox.value = "";
 
     if (screen === 0) {
         openTabsScreen();
@@ -1320,7 +1320,7 @@ function toggleByName() {
     
     sortByName = sortByName === true ? false : true;
 
-    document.getElementById("searchBox").value = "";
+    searchBox.value = "";
 
     if (screen === 0) {
         openTabsScreen();
@@ -1415,27 +1415,15 @@ function checkIntersections() {
                     viewTab(parseInt(item.id.substring(1)));
                     break;
                 case 'c':
-                    var title = document.getElementById("t" + item.id.substring(1)).innerHTML;
-                    var favIcon = document.getElementById("f" + item.id.substring(1)).src;
                     var url = document.getElementById("l" + item.id.substring(1)).classList[2];
 
                     recentActions = [];
-
-                    if (!recentlyClosed.includes({title: title, url: url, favIconUrl: favIcon})) {
-                        recentlyClosed.push({title: title, url: url, favIconUrl: favIcon});
-                    }
-
                     recentActions.push(url);
-
-                    if (recentlyClosed.length > 300) {
-                        //recentlyClosed = recentlyClosed.slice(recentlyClosed.length - 301, recentlyClosed.length - 1);
-                    }
 
                     if (screen === 1) recentlyClosedScreen();
                 
                     showUndo("Closed tab.");
-                
-                    chrome.storage.sync.set({key: JSON.stringify(recentlyClosed)});
+
                     closeTab(parseInt(item.id.substring(1)));
                     break;
                 case 'o':
@@ -1745,18 +1733,14 @@ window.onload = function() {
 
         if (this.addManuallyClosed && this.allTabs.map(e => e.id).indexOf(tid) >= 0) {
             var tabElem = this.allTabs[this.allTabs.map(e => e.id).indexOf(tid)];
-            var reTab = {title: tabElem.title, url: tabElem.url, favIconUrl: tabElem.favIconUrl};
+            const reTab = {title: tabElem.title, url: tabElem.url, favIconUrl: tabElem.favIconUrl};
 
-            if (!this.recentlyClosed.includes(reTab)){
-                recentlyClosed.push(reTab);
-
-                if (recentlyClosed.length > 100) {
-                    recentlyClosed = recentlyClosed.slice(recentlyClosed.length - 299, recentlyClosed.length - 1);
-                }
+            if (this.recentlyClosed.map(e => e.url).indexOf(tabElem.url) < 0){
+                this.recentlyClosed.push(reTab);
             
                 chrome.storage.sync.set({key: JSON.stringify(recentlyClosed)});
 
-                if (screen === 1) this.recentlyClosedScreen();
+                if (this.screen === 1) this.recentlyClosedScreen();
             }
         }
 
@@ -1773,7 +1757,7 @@ window.onload = function() {
         }
 
         checkEmptyGroup();
-        checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
+        checkEmptyMain(`<h2 id="emptyPage">NO TABS</h2>`);
     });
 
     chrome.tabs.onDetached.addListener(this.reloadAkira);
@@ -1783,14 +1767,4 @@ window.onload = function() {
     chrome.windows.onCreated.addListener(this.openTabsScreen);
 
     chrome.windows.onRemoved.addListener(this.openTabsScreen);
-
-    chrome.storage.onChanged.addListener((res) => {
-        if (this.recentlyClosed.length > 100) {
-            this.recentlyClosed = this.recentlyClosed.slice(this.recentlyClosed.length - 1, this.recentlyClosed.length - 300);
-
-            this.console.log(this.recentlyClosed);
-
-            chrome.storage.sync.set({key: JSON.stringify(recentlyClosed)});
-        }
-    });
 }
