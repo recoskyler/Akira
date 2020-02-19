@@ -663,11 +663,15 @@ function addTabToList(tab) {
                 }
 
                 chrome.bookmarks.search({title: bookmarksFolderName}, (ab) => {
-                    res.forEach((b) => {
-                        if (b.parentId === ab[0].id) {
-                            bookmark = "../images/bookmarked.png";
-                        }
-                    });
+                    if (ab.length === 0 || !ab) {
+                        chrome.bookmarks.create({title: bookmarksFolderName}, (node) => {});
+                    } else {
+                        res.forEach((b) => {
+                            if (b.parentId === ab[0].id) {
+                                bookmark = "../images/bookmarked.png";
+                            }
+                        });
+                    }
 
                     // Get Color and id
                     var wColor = windowColors[windows.map(e => e.id).indexOf(tab.windowId) % windowColors.length];
@@ -734,7 +738,7 @@ function updateTab(tab) {
         return;
     }
 
-    if (screen >= 1 && !allTabs.includes(tab)) {
+    if (screen > 0 && !allTabs.includes(tab)) {
         allTabs.push(tab);
         return;
     }
@@ -1757,7 +1761,11 @@ window.onload = function() {
         }
 
         checkEmptyGroup();
-        checkEmptyMain(`<h2 id="emptyPage">NO TABS</h2>`);
+        if (screen === 0) {
+            checkEmptyMain(`<h2 id="emptyPage">NO OPEN TABS</h2>`);
+        } else if (screen === 1) {
+            checkEmptyMain(`<h2 id="emptyPage">NO RECENTLY CLOSED TABS</h2>`);
+        }
     });
 
     chrome.tabs.onDetached.addListener(this.reloadAkira);
