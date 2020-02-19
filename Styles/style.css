@@ -356,10 +356,6 @@ br {
     user-select: none;
 }
 
-/* .selected {
-    background-color: #3F51B5;
-} */
-
 .selected:hover {
     background-color: #303F9F;
 }
