@@ -27,14 +27,14 @@ By Recoskyler - Adil Atalay Hamamcıoğlu
 
 I am not responsible for any inconvenience. By adding Akira to Google Chrome, you take all responsibility.
 
+### License
+
+[LICENSE.md](https://github.com/recoskyler/Akira/blob/master/LICENSE.md)
+
 ### Privacy Policy
 
 [Privacy-Policy.md](https://github.com/recoskyler/Akira/blob/master/privacy-policy.md)
 
-## Terms Of Service
+### Terms Of Service
 
 [Terms-Of-Service.md]([../Akira/terms-of-service.md](https://github.com/recoskyler/Akira/blob/master/terms-of-service.md))
-
-### MIT License
-
-[LICENSE.md](https://github.com/recoskyler/Akira/blob/master/LICENSE.md)
