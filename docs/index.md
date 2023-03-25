@@ -4,7 +4,7 @@ If you have a bunch of Chrome windows, with a bunch of open tabs, and you are af
 
 ## The Story
 
-One day, my friend and I were trying to play an action/horror game on my friend's laptop, which has moderate specs (should be able to run games at 30 FPS on low settings). Even if the game was on the lowest settings, we were getting around 10 FPS, which was really frustrating.
+One day, my best friend and I were trying to play an action/horror game on my friend's laptop, which has moderate specs (should be able to run games at 30 FPS on low settings). Even if the game was on the lowest settings, we were getting around 10 FPS, which was really frustrating.
 
 After getting ourselves tortured by 10 FPS gameplay, we decided to browse reddit/etc. My friend switched to Google Chrome, and that's when I noticed the source of our problem. There were at least 20 tabs open on 10 separate Chrome windows, slurping the RAM and other resources just like an athlete drinking water after training.
 
@@ -26,6 +26,14 @@ AKIRA
 By Recoskyler - Adil Atalay Hamamcıoğlu
 
 I am not responsible for any inconvenience. By adding Akira to Google Chrome, you take all responsibility.
+
+---
+
+_In loving memory of Deniz, my childhood and best friend._
+
+_1999 - 2023_
+
+---
 
 ### License
 
